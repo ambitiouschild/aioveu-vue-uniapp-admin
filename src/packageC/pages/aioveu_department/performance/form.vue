@@ -5,9 +5,9 @@
     </view>
 
     <scroll-view class="form-body" scroll-y>
-      <!-- 员工姓名 -->
+      <!-- 员工 -->
       <view class="form-item">
-        <text class="form-label">员工姓名</text>
+        <text class="form-label">员工</text>
         <picker
           class="form-picker"
           mode="selector"
@@ -22,78 +22,82 @@
         </picker>
       </view>
 
-      <!-- 日期 -->
+      <!-- 考核年份 -->
       <view class="form-item">
-        <text class="form-label">日期</text>
-        <picker
-          class="form-picker"
-          mode="date"
-          :value="formData.date"
-          @change="onDateChange"
-        >
-          <view class="picker-view">
-            {{ formData.date || '请选择日期' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 上班打卡时间 -->
-      <view class="form-item">
-        <text class="form-label">上班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkinTime"
-          @change="onCheckinTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkinTime || '请选择上班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 下班打卡时间 -->
-      <view class="form-item">
-        <text class="form-label">下班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkoutTime"
-          @change="onCheckoutTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkoutTime || '请选择下班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 工作时长 -->
-      <view class="form-item">
-        <text class="form-label">工作时长(小时)</text>
+        <text class="form-label">考核年份</text>
         <input
           type="number"
           class="form-input"
-          placeholder="请输入工作时长"
-          v-model="formData.workHours"
+          placeholder="请输入考核年份"
+          v-model="formData.periodYear"
         />
       </view>
 
-      <!-- 考勤状态 -->
+      <!-- 考核季度 -->
       <view class="form-item">
-        <text class="form-label">考勤状态</text>
+        <text class="form-label">考核季度</text>
         <picker
           class="form-picker"
           mode="selector"
-          :range="attendanceStatusOptions"
+          :range="periodQuarterOptions"
           range-key="label"
-          :value="statusIndex"
-          @change="onStatusChange"
+          :value="quarterIndex"
+          @change="onQuarterChange"
         >
           <view class="picker-view">
-            {{ statusIndex >= 0 ? attendanceStatusOptions[statusIndex].label : '请选择状态' }}
+            {{ quarterIndex >= 0 ? periodQuarterOptions[quarterIndex].label : '请选择季度' }}
           </view>
         </picker>
       </view>
+
+      <!-- KPI评分 -->
+      <view class="form-item">
+        <text class="form-label">KPI评分</text>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="请输入KPI评分(1-100)"
+          v-model="formData.kpiScore"
+        />
+      </view>
+
+      <!-- 生产率 -->
+      <view class="form-item">
+        <text class="form-label">生产率</text>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="请输入生产率百分比(%)"
+          v-model="formData.productivity"
+        />
+      </view>
+
+      <!-- 主管评语 -->
+      <view class="form-item">
+        <text class="form-label">主管评语</text>
+        <textarea
+          class="form-textarea"
+          placeholder="请输入主管评语"
+          v-model="formData.review"
+        />
+      </view>
+
+<!--      &lt;!&ndash; 绩效等级 &ndash;&gt;-->
+<!--      <view class="form-item">-->
+<!--        <text class="form-label">绩效等级</text>-->
+<!--        <picker-->
+<!--          class="form-picker"-->
+<!--          mode="selector"-->
+<!--          :range="performanceGradeOptions"-->
+<!--          range-key="label"-->
+<!--          :value="gradeIndex"-->
+<!--          @change="onGradeChange"-->
+<!--        >-->
+<!--          <view class="picker-view">-->
+<!--            {{ gradeIndex >= 0 ? performanceGradeOptions[gradeIndex].label : '请选择绩效等级' }}-->
+<!--          </view>-->
+<!--        </picker>-->
+<!--      </view>-->
     </scroll-view>
 
     <view class="form-footer">
@@ -106,52 +110,56 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import AioveuAttendanceAPI, {
-  AioveuAttendanceForm
-} from "@/packageC/api/aioveuAttendance/aioveu-attendance";
+import AioveuPerformanceAPI, {
+  AioveuPerformanceForm
+} from "@/packageC/api/aioveuPerformance/aioveu-performance";
 import AioveuEmployeeAPI, { EmployeeOptionVO } from "@/packageC/api/aioveuEmployee/aioveu-employee";
 import DictAPI, { DictItemOption } from '@/api/system/dict';
 
-const formTitle = ref('新增考勤');
-const attendanceId = ref<number | undefined>(undefined);
+const formTitle = ref('新增绩效');
+const performanceId = ref<number | undefined>(undefined);
 const loading = ref(false);
 
-const formData = reactive<AioveuAttendanceForm>({
+const formData = reactive<AioveuPerformanceForm>({
   employeeName: '',
-  // date: '',
-  // checkinTime: '',
-  // checkoutTime: '',
-  workHours: undefined,
-  status: undefined
+  periodYear: undefined,
+  periodQuarter: undefined,
+  kpiScore: undefined,
+  productivity: undefined,
+  review: '',
+  // performanceGrade: undefined
 });
 
 const employeeOptions = ref<EmployeeOptionVO[]>([]);
-const attendanceStatusOptions = ref<DictItemOption[]>([]);
+const periodQuarterOptions = ref<DictItemOption[]>([]);
+const performanceGradeOptions = ref<DictItemOption[]>([]);
 
 const employeeIndex = ref(-1);
-const statusIndex = ref(-1);
+const quarterIndex = ref(-1);
+const gradeIndex = ref(-1);
 
 onLoad((options: any) => {
   console.log('页面参数:', options);
 
-  if (options.attendanceId) {
-    attendanceId.value = Number(options.attendanceId);
-    formTitle.value = '编辑考勤';
-    loadAttendanceData();
+  if (options.id) {
+    performanceId.value = Number(options.id);
+    formTitle.value = '编辑绩效';
+    loadPerformanceData();
   } else {
-    formTitle.value = '新增考勤';
+    formTitle.value = '新增绩效';
   }
 
   loadEmployees();
-  loadAttendanceStatus();
+  loadPeriodQuarterOptions();
+  loadPerformanceGradeOptions();
 });
 
-// 加载考勤数据
-const loadAttendanceData = () => {
-  if (!attendanceId.value) return;
+// 加载绩效数据
+const loadPerformanceData = () => {
+  if (!performanceId.value) return;
 
   loading.value = true;
-  AioveuAttendanceAPI.getFormData(attendanceId.value)
+  AioveuPerformanceAPI.getFormData(performanceId.value)
     .then((data) => {
       Object.assign(formData, data);
 
@@ -163,13 +171,21 @@ const loadAttendanceData = () => {
         employeeIndex.value = index;
       }
 
-      // 设置状态索引
-      if (formData.status !== undefined) {
-        const index = attendanceStatusOptions.value.findIndex(
-          item => item.value === formData.status?.toString()
+      // 设置季度索引
+      if (formData.periodQuarter !== undefined) {
+        const index = periodQuarterOptions.value.findIndex(
+          item => Number(item.value) === formData.periodQuarter
         );
-        statusIndex.value = index;
+        quarterIndex.value = index;
       }
+
+      // // 设置绩效等级索引
+      // if (formData.performanceGrade) {
+      //   const index = performanceGradeOptions.value.findIndex(
+      //     item => item.value === formData.performanceGrade
+      //   );
+      //   gradeIndex.value = index;
+      // }
     })
     .finally(() => {
       loading.value = false;
@@ -189,11 +205,19 @@ const loadEmployees = () => {
     });
 };
 
-// 加载考勤状态选项
-const loadAttendanceStatus = () => {
-  DictAPI.getDictItems('attendance_status')
+// 加载季度选项
+const loadPeriodQuarterOptions = () => {
+  DictAPI.getDictItems('performance_period_quarter')
     .then(response => {
-      attendanceStatusOptions.value = response;
+      periodQuarterOptions.value = response;
+    });
+};
+
+// 加载绩效等级选项
+const loadPerformanceGradeOptions = () => {
+  DictAPI.getDictItems('performance_grade')
+    .then(response => {
+      performanceGradeOptions.value = response;
     });
 };
 
@@ -206,29 +230,23 @@ const onEmployeeChange = (e: any) => {
   }
 };
 
-// 日期选择变化
-const onDateChange = (e: any) => {
-  formData.date = e.detail.value;
-};
-
-// 上班时间选择变化
-const onCheckinTimeChange = (e: any) => {
-  formData.checkinTime = e.detail.value;
-};
-
-// 下班时间选择变化
-const onCheckoutTimeChange = (e: any) => {
-  formData.checkoutTime = e.detail.value;
-};
-
-// 状态选择变化
-const onStatusChange = (e: any) => {
+// 季度选择变化
+const onQuarterChange = (e: any) => {
   const index = e.detail.value;
-  statusIndex.value = index;
-  if (attendanceStatusOptions.value[index]) {
-    formData.status = Number(attendanceStatusOptions.value[index].value);
+  quarterIndex.value = index;
+  if (periodQuarterOptions.value[index]) {
+    formData.periodQuarter = Number(periodQuarterOptions.value[index].value);
   }
 };
+
+// // 绩效等级选择变化
+// const onGradeChange = (e: any) => {
+//   const index = e.detail.value;
+//   gradeIndex.value = index;
+//   if (performanceGradeOptions.value[index]) {
+//     formData.performanceGrade = performanceGradeOptions.value[index].value;
+//   }
+// };
 
 // 提交表单
 const handleSubmit = () => {
@@ -236,9 +254,9 @@ const handleSubmit = () => {
 
   uni.showLoading({ title: '提交中...' });
 
-  if (attendanceId.value) {
+  if (performanceId.value) {
     // 更新
-    AioveuAttendanceAPI.update(attendanceId.value, formData)
+    AioveuPerformanceAPI.update(performanceId.value, formData)
       .then(() => {
         uni.showToast({
           title: "修改成功",
@@ -249,7 +267,7 @@ const handleSubmit = () => {
       .finally(() => uni.hideLoading());
   } else {
     // 新增
-    AioveuAttendanceAPI.add(formData)
+    AioveuPerformanceAPI.add(formData)
       .then(() => {
         uni.showToast({
           title: "新增成功",
@@ -271,25 +289,33 @@ const validateForm = () => {
     return false;
   }
 
-  if (!formData.date) {
+  if (!formData.periodYear) {
     uni.showToast({
-      title: "请选择日期",
+      title: "请输入考核年份",
       icon: "none"
     });
     return false;
   }
 
-  if (!formData.workHours) {
+  if (formData.periodQuarter === undefined) {
     uni.showToast({
-      title: "请输入工作时长",
+      title: "请选择考核季度",
       icon: "none"
     });
     return false;
   }
 
-  if (formData.status === undefined) {
+  if (!formData.kpiScore) {
     uni.showToast({
-      title: "请选择考勤状态",
+      title: "请输入KPI评分",
+      icon: "none"
+    });
+    return false;
+  }
+
+  if (!formData.productivity) {
+    uni.showToast({
+      title: "请输入生产率",
       icon: "none"
     });
     return false;
@@ -354,6 +380,15 @@ const handleCancel = () => {
   border-radius: 12rpx;
   padding: 24rpx;
   font-size: 30rpx;
+}
+
+.form-textarea {
+  width: 100%;
+  border: 1rpx solid #e2e8f0;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  font-size: 30rpx;
+  height: 200rpx;
 }
 
 .picker-view {
