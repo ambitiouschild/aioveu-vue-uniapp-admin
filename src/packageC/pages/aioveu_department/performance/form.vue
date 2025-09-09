@@ -5,7 +5,7 @@
     </view>
 
     <scroll-view class="form-body" scroll-y>
-      <!-- 员工 -->
+      <!-- 员工选择 -->
       <view class="form-item">
         <text class="form-label">员工</text>
         <picker
@@ -58,6 +58,8 @@
           class="form-input"
           placeholder="请输入KPI评分(1-100)"
           v-model="formData.kpiScore"
+          min="1"
+          max="100"
         />
       </view>
 
@@ -69,6 +71,8 @@
           class="form-input"
           placeholder="请输入生产率百分比(%)"
           v-model="formData.productivity"
+          min="0"
+          max="100"
         />
       </view>
 
@@ -82,22 +86,22 @@
         />
       </view>
 
-<!--      &lt;!&ndash; 绩效等级 &ndash;&gt;-->
-<!--      <view class="form-item">-->
-<!--        <text class="form-label">绩效等级</text>-->
-<!--        <picker-->
-<!--          class="form-picker"-->
-<!--          mode="selector"-->
-<!--          :range="performanceGradeOptions"-->
-<!--          range-key="label"-->
-<!--          :value="gradeIndex"-->
-<!--          @change="onGradeChange"-->
-<!--        >-->
-<!--          <view class="picker-view">-->
-<!--            {{ gradeIndex >= 0 ? performanceGradeOptions[gradeIndex].label : '请选择绩效等级' }}-->
-<!--          </view>-->
-<!--        </picker>-->
-<!--      </view>-->
+      <!-- 绩效等级 -->
+      <view class="form-item">
+        <text class="form-label">绩效等级</text>
+        <picker
+          class="form-picker"
+          mode="selector"
+          :range="performanceGradeOptions"
+          range-key="label"
+          :value="gradeIndex"
+          @change="onGradeChange"
+        >
+          <view class="picker-view">
+            {{ gradeIndex >= 0 ? performanceGradeOptions[gradeIndex].label : '请选择绩效等级' }}
+          </view>
+        </picker>
+      </view>
     </scroll-view>
 
     <view class="form-footer">
@@ -113,33 +117,40 @@ import { onLoad } from '@dcloudio/uni-app';
 import AioveuPerformanceAPI, {
   AioveuPerformanceForm
 } from "@/packageC/api/aioveuPerformance/aioveu-performance";
-import AioveuEmployeeAPI, { EmployeeOptionVO } from "@/packageC/api/aioveuEmployee/aioveu-employee";
+import AioveuEmployeeAPI, {  EmployeeOptionVO } from "@/packageC/api/aioveuEmployee/aioveu-employee";
 import DictAPI, { DictItemOption } from '@/api/system/dict';
 
+// 表单标题
 const formTitle = ref('新增绩效');
+// 当前编辑的绩效ID
 const performanceId = ref<number | undefined>(undefined);
+// 加载状态
 const loading = ref(false);
 
+// 表单数据
 const formData = reactive<AioveuPerformanceForm>({
   employeeName: '',
-  periodYear: undefined,
+  // periodYear: '',
   periodQuarter: undefined,
   kpiScore: undefined,
   productivity: undefined,
   review: '',
-  // performanceGrade: undefined
+  // performanceGrade: ''
 });
 
+// 选项数据
 const employeeOptions = ref<EmployeeOptionVO[]>([]);
 const periodQuarterOptions = ref<DictItemOption[]>([]);
 const performanceGradeOptions = ref<DictItemOption[]>([]);
 
+// 当前选中索引
 const employeeIndex = ref(-1);
 const quarterIndex = ref(-1);
 const gradeIndex = ref(-1);
 
+// 页面加载钩子
 onLoad((options: any) => {
-  console.log('页面参数:', options);
+  console.log('表单页参数:', options);
 
   if (options.id) {
     performanceId.value = Number(options.id);
@@ -149,76 +160,100 @@ onLoad((options: any) => {
     formTitle.value = '新增绩效';
   }
 
+  // 加载选项数据
   loadEmployees();
   loadPeriodQuarterOptions();
   loadPerformanceGradeOptions();
 });
 
 // 加载绩效数据
-const loadPerformanceData = () => {
+const loadPerformanceData = async () => {
   if (!performanceId.value) return;
 
-  loading.value = true;
-  AioveuPerformanceAPI.getFormData(performanceId.value)
-    .then((data) => {
-      Object.assign(formData, data);
+  try {
+    loading.value = true;
+    const data = await AioveuPerformanceAPI.getFormData(performanceId.value);
+    Object.assign(formData, data);
 
-      // 设置员工索引
-      if (formData.employeeName) {
-        const index = employeeOptions.value.findIndex(
-          emp => emp.employeeName === formData.employeeName
-        );
-        employeeIndex.value = index;
-      }
+    // 设置员工索引
+    if (formData.employeeName) {
+      const index = employeeOptions.value.findIndex(
+        emp => emp.employeeName === formData.employeeName
+      );
+      employeeIndex.value = index;
+    }
 
-      // 设置季度索引
-      if (formData.periodQuarter !== undefined) {
-        const index = periodQuarterOptions.value.findIndex(
-          item => Number(item.value) === formData.periodQuarter
-        );
-        quarterIndex.value = index;
-      }
+    // 设置季度索引
+    if (formData.periodQuarter !== undefined) {
+      const index = periodQuarterOptions.value.findIndex(
+        item => Number(item.value) === formData.periodQuarter
+      );
+      quarterIndex.value = index;
+    }
 
-      // // 设置绩效等级索引
-      // if (formData.performanceGrade) {
-      //   const index = performanceGradeOptions.value.findIndex(
-      //     item => item.value === formData.performanceGrade
-      //   );
-      //   gradeIndex.value = index;
-      // }
-    })
-    .finally(() => {
-      loading.value = false;
+    // // 设置绩效等级索引
+    // if (formData.performanceGrade) {
+    //   const index = performanceGradeOptions.value.findIndex(
+    //     item => item.value === formData.performanceGrade
+    //   );
+    //   gradeIndex.value = index;
+    // }
+  } catch (error) {
+    console.error('加载绩效数据失败:', error);
+    uni.showToast({
+      title: '加载数据失败',
+      icon: 'none'
     });
+  } finally {
+    loading.value = false;
+  }
 };
 
 // 加载员工选项
-const loadEmployees = () => {
-  AioveuEmployeeAPI.getAllEmployeeOptions()
-    .then(response => {
-      if (Array.isArray(response)) {
-        employeeOptions.value = response.map(emp => ({
-          employeeId: Number(emp.employeeId),
-          employeeName: emp.employeeName
-        }));
-      }
+const loadEmployees = async () => {
+  try {
+    const response = await AioveuEmployeeAPI.getAllEmployeeOptions();
+    if (Array.isArray(response)) {
+      employeeOptions.value = response.map(emp => ({
+        employeeId: Number(emp.employeeId),
+        employeeName: emp.employeeName
+      }));
+    }
+  } catch (error) {
+    console.error('加载员工列表失败:', error);
+    uni.showToast({
+      title: '加载员工列表失败',
+      icon: 'none'
     });
+  }
 };
 
 // 加载季度选项
-const loadPeriodQuarterOptions = () => {
-  DictAPI.getDictItems('performance_period_quarter')
-    .then(response => {
-      periodQuarterOptions.value = response;
+const loadPeriodQuarterOptions = async () => {
+  try {
+    const response = await DictAPI.getDictItems('performance_period_quarter');
+    periodQuarterOptions.value = response;
+  } catch (error) {
+    console.error('加载季度选项失败:', error);
+    uni.showToast({
+      title: '加载季度选项失败',
+      icon: 'none'
     });
+  }
 };
 
 // 加载绩效等级选项
-const loadPerformanceGradeOptions = () => {
-  DictAPI.getDictItems('performance_grade')
-    .then(response => {
-      performanceGradeOptions.value = response;
+const loadPerformanceGradeOptions = async () => {
+  try {
+    const response = await DictAPI.getDictItems('performance_grade');
+    performanceGradeOptions.value = response;
+  } catch (error) {
+    console.error('加载绩效等级失败:', error);
+    uni.showToast({
+      title: '加载绩效等级失败',
+      icon: 'none'
     });
+  }
 };
 
 // 员工选择变化
@@ -249,33 +284,38 @@ const onQuarterChange = (e: any) => {
 // };
 
 // 提交表单
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!validateForm()) return;
 
-  uni.showLoading({ title: '提交中...' });
+  try {
+    uni.showLoading({ title: '提交中...' });
 
-  if (performanceId.value) {
-    // 更新
-    AioveuPerformanceAPI.update(performanceId.value, formData)
-      .then(() => {
-        uni.showToast({
-          title: "修改成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
-  } else {
-    // 新增
-    AioveuPerformanceAPI.add(formData)
-      .then(() => {
-        uni.showToast({
-          title: "新增成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
+    if (performanceId.value) {
+      // 更新绩效
+      await AioveuPerformanceAPI.update(performanceId.value, formData);
+      uni.showToast({
+        title: "修改成功",
+        icon: "success"
+      });
+    } else {
+      // 新增绩效
+      await AioveuPerformanceAPI.add(formData);
+      uni.showToast({
+        title: "新增成功",
+        icon: "success"
+      });
+    }
+
+    // 返回列表页
+    uni.navigateBack();
+  } catch (error) {
+    console.error('提交表单失败:', error);
+    uni.showToast({
+      title: "提交失败",
+      icon: "none"
+    });
+  } finally {
+    uni.hideLoading();
   }
 };
 
@@ -311,11 +351,23 @@ const validateForm = () => {
       icon: "none"
     });
     return false;
+  } else if (formData.kpiScore < 1 || formData.kpiScore > 100) {
+    uni.showToast({
+      title: "KPI评分必须在1-100之间",
+      icon: "none"
+    });
+    return false;
   }
 
   if (!formData.productivity) {
     uni.showToast({
       title: "请输入生产率",
+      icon: "none"
+    });
+    return false;
+  } else if (formData.productivity < 0 || formData.productivity > 100) {
+    uni.showToast({
+      title: "生产率必须在0-100之间",
       icon: "none"
     });
     return false;
@@ -374,7 +426,7 @@ const handleCancel = () => {
   font-weight: 500;
 }
 
-.form-input, .form-picker {
+.form-input, .form-picker, .form-textarea {
   width: 100%;
   border: 1rpx solid #e2e8f0;
   border-radius: 12rpx;
@@ -383,11 +435,6 @@ const handleCancel = () => {
 }
 
 .form-textarea {
-  width: 100%;
-  border: 1rpx solid #e2e8f0;
-  border-radius: 12rpx;
-  padding: 24rpx;
-  font-size: 30rpx;
   height: 200rpx;
 }
 

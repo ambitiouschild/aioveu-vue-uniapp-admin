@@ -5,92 +5,118 @@
     </view>
 
     <scroll-view class="form-body" scroll-y>
-      <!-- 员工姓名 -->
+      <!-- 仓库 -->
       <view class="form-item">
-        <text class="form-label">员工姓名</text>
+        <text class="form-label">仓库</text>
         <picker
           class="form-picker"
           mode="selector"
-          :range="employeeOptions"
-          range-key="employeeName"
-          :value="employeeIndex"
-          @change="onEmployeeChange"
+          :range="warehouseOptions"
+          range-key="warehouseName"
+          :value="warehouseIndex"
+          @change="onWarehouseChange"
         >
           <view class="picker-view">
-            {{ employeeIndex >= 0 ? employeeOptions[employeeIndex].employeeName : '请选择员工' }}
+            {{ warehouseIndex >= 0 ? warehouseOptions[warehouseIndex].warehouseName : '请选择仓库' }}
           </view>
         </picker>
       </view>
 
-      <!-- 日期 -->
+      <!-- 物资 -->
       <view class="form-item">
-        <text class="form-label">日期</text>
+        <text class="form-label">物资</text>
         <picker
           class="form-picker"
-          mode="date"
-          :value="formData.date"
-          @change="onDateChange"
+          mode="selector"
+          :range="materialOptions"
+          range-key="materialName"
+          :value="materialIndex"
+          @change="onMaterialChange"
         >
           <view class="picker-view">
-            {{ formData.date || '请选择日期' }}
+            {{ materialIndex >= 0 ? materialOptions[materialIndex].materialName : '请选择物资' }}
           </view>
         </picker>
       </view>
 
-      <!-- 上班打卡时间 -->
+      <!-- 当前库存量 -->
       <view class="form-item">
-        <text class="form-label">上班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkinTime"
-          @change="onCheckinTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkinTime || '请选择上班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 下班打卡时间 -->
-      <view class="form-item">
-        <text class="form-label">下班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkoutTime"
-          @change="onCheckoutTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkoutTime || '请选择下班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 工作时长 -->
-      <view class="form-item">
-        <text class="form-label">工作时长(小时)</text>
+        <text class="form-label">当前库存量</text>
         <input
           type="number"
           class="form-input"
-          placeholder="请输入工作时长"
-          v-model="formData.workHours"
+          placeholder="请输入当前库存量"
+          v-model="formData.quantity"
         />
       </view>
 
-      <!-- 考勤状态 -->
+      <!-- 批次号 -->
       <view class="form-item">
-        <text class="form-label">考勤状态</text>
+        <text class="form-label">批次号</text>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="请输入批次号"
+          v-model="formData.batchNumber"
+        />
+      </view>
+
+      <!-- 生产日期 -->
+      <view class="form-item">
+        <text class="form-label">生产日期</text>
         <picker
           class="form-picker"
-          mode="selector"
-          :range="attendanceStatusOptions"
-          range-key="label"
-          :value="statusIndex"
-          @change="onStatusChange"
+          mode="date"
+          :value="formData.productionDate"
+          @change="onProductionDateChange"
         >
           <view class="picker-view">
-            {{ statusIndex >= 0 ? attendanceStatusOptions[statusIndex].label : '请选择状态' }}
+            {{ formData.productionDate || '请选择生产日期' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 有效期至 -->
+      <view class="form-item">
+        <text class="form-label">有效期至</text>
+        <picker
+          class="form-picker"
+          mode="date"
+          :value="formData.expiryDate"
+          @change="onExpiryDateChange"
+        >
+          <view class="picker-view">
+            {{ formData.expiryDate || '请选择有效期至' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 最后入库时间 -->
+      <view class="form-item">
+        <text class="form-label">最后入库时间</text>
+        <picker
+          class="form-picker"
+          mode="datetime"
+          :value="formData.lastInbound"
+          @change="onLastInboundChange"
+        >
+          <view class="picker-view">
+            {{ formData.lastInbound || '请选择最后入库时间' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 最后出库时间 -->
+      <view class="form-item">
+        <text class="form-label">最后出库时间</text>
+        <picker
+          class="form-picker"
+          mode="datetime"
+          :value="formData.lastOutbound"
+          @change="onLastOutboundChange"
+        >
+          <view class="picker-view">
+            {{ formData.lastOutbound || '请选择最后出库时间' }}
           </view>
         </picker>
       </view>
@@ -106,190 +132,217 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import AioveuAttendanceAPI, {
-  AioveuAttendanceForm
-} from "@/packageC/api/aioveuAttendance/aioveu-attendance";
-import AioveuEmployeeAPI, { EmployeeOptionVO } from "@/packageC/api/aioveuEmployee/aioveu-employee";
-import DictAPI, { DictItemOption } from '@/api/system/dict';
+import AioveuInventoryAPI, {
+  AioveuInventoryForm
+} from "@/packageD/api/aioveuInventory/aioveu-inventory";
+import AioveuWarehouseAPI, { WarehouseOptionVO } from "@/packageD/api/aioveuWarehouse/aioveu-warehouse";
+import AioveuMaterialAPI, { MaterialOptionVO } from "@/packageD/api/aioveuMaterial/aioveu-material";
 
-const formTitle = ref('新增考勤');
-const attendanceId = ref<number | undefined>(undefined);
+const formTitle = ref('新增库存');
+const inventoryId = ref<number | undefined>(undefined);
 const loading = ref(false);
 
-const formData = reactive<AioveuAttendanceForm>({
-  employeeName: '',
-  // date: '',
-  // checkinTime: '',
-  // checkoutTime: '',
-  workHours: undefined,
-  status: undefined
+const formData = reactive<AioveuInventoryForm>({
+  warehouseName: '',
+  materialName: '',
+  quantity: undefined,
+  batchNumber: '',
+  // productionDate: '',
+  // expiryDate: '',
+  // lastInbound: '',
+  // lastOutbound: ''
 });
 
-const employeeOptions = ref<EmployeeOptionVO[]>([]);
-const attendanceStatusOptions = ref<DictItemOption[]>([]);
+const warehouseOptions = ref<WarehouseOptionVO[]>([]);
+const materialOptions = ref<MaterialOptionVO[]>([]);
 
-const employeeIndex = ref(-1);
-const statusIndex = ref(-1);
+const warehouseIndex = ref(-1);
+const materialIndex = ref(-1);
 
 onLoad((options: any) => {
   console.log('页面参数:', options);
 
-  if (options.attendanceId) {
-    attendanceId.value = Number(options.attendanceId);
-    formTitle.value = '编辑考勤';
-    loadAttendanceData();
+  if (options.id) {
+    inventoryId.value = Number(options.id);
+    formTitle.value = '编辑库存';
+    loadInventoryData();
   } else {
-    formTitle.value = '新增考勤';
+    formTitle.value = '新增库存';
   }
 
-  loadEmployees();
-  loadAttendanceStatus();
+  // 加载选项数据
+  loadWarehouseOptions();
+  loadMaterialOptions();
 });
 
-// 加载考勤数据
-const loadAttendanceData = () => {
-  if (!attendanceId.value) return;
+// 加载库存数据
+const loadInventoryData = async () => {
+  if (!inventoryId.value) return;
 
-  loading.value = true;
-  AioveuAttendanceAPI.getFormData(attendanceId.value)
-    .then((data) => {
-      Object.assign(formData, data);
+  try {
+    loading.value = true;
+    const data = await AioveuInventoryAPI.getFormData(inventoryId.value);
+    Object.assign(formData, data);
 
-      // 设置员工索引
-      if (formData.employeeName) {
-        const index = employeeOptions.value.findIndex(
-          emp => emp.employeeName === formData.employeeName
-        );
-        employeeIndex.value = index;
-      }
+    // 设置仓库索引
+    if (formData.warehouseName) {
+      const index = warehouseOptions.value.findIndex(
+        wh => wh.warehouseName === formData.warehouseName
+      );
+      warehouseIndex.value = index;
+    }
 
-      // 设置状态索引
-      if (formData.status !== undefined) {
-        const index = attendanceStatusOptions.value.findIndex(
-          item => item.value === formData.status?.toString()
-        );
-        statusIndex.value = index;
-      }
-    })
-    .finally(() => {
-      loading.value = false;
+    // 设置物资索引
+    if (formData.materialName) {
+      const index = materialOptions.value.findIndex(
+        mat => mat.materialName === formData.materialName
+      );
+      materialIndex.value = index;
+    }
+  } catch (error) {
+    console.error('加载库存数据失败:', error);
+    uni.showToast({
+      title: '加载数据失败',
+      icon: 'none'
     });
-};
-
-// 加载员工选项
-const loadEmployees = () => {
-  AioveuEmployeeAPI.getAllEmployeeOptions()
-    .then(response => {
-      if (Array.isArray(response)) {
-        employeeOptions.value = response.map(emp => ({
-          employeeId: Number(emp.employeeId),
-          employeeName: emp.employeeName
-        }));
-      }
-    });
-};
-
-// 加载考勤状态选项
-const loadAttendanceStatus = () => {
-  DictAPI.getDictItems('attendance_status')
-    .then(response => {
-      attendanceStatusOptions.value = response;
-    });
-};
-
-// 员工选择变化
-const onEmployeeChange = (e: any) => {
-  const index = e.detail.value;
-  employeeIndex.value = index;
-  if (employeeOptions.value[index]) {
-    formData.employeeName = employeeOptions.value[index].employeeName;
+  } finally {
+    loading.value = false;
   }
 };
 
-// 日期选择变化
-const onDateChange = (e: any) => {
-  formData.date = e.detail.value;
-};
-
-// 上班时间选择变化
-const onCheckinTimeChange = (e: any) => {
-  formData.checkinTime = e.detail.value;
-};
-
-// 下班时间选择变化
-const onCheckoutTimeChange = (e: any) => {
-  formData.checkoutTime = e.detail.value;
-};
-
-// 状态选择变化
-const onStatusChange = (e: any) => {
-  const index = e.detail.value;
-  statusIndex.value = index;
-  if (attendanceStatusOptions.value[index]) {
-    formData.status = Number(attendanceStatusOptions.value[index].value);
+// 加载仓库选项
+const loadWarehouseOptions = async () => {
+  try {
+    const response = await AioveuWarehouseAPI.getAllWarehouseOptions();
+    if (Array.isArray(response)) {
+      warehouseOptions.value = response.map(wh => ({
+        warehouseId: Number(wh.warehouseId),
+        warehouseName: wh.warehouseName
+      }));
+    }
+  } catch (error) {
+    console.error('加载仓库列表失败:', error);
+    uni.showToast({
+      title: '加载仓库列表失败',
+      icon: 'none'
+    });
   }
+};
+
+// 加载物资选项
+const loadMaterialOptions = async () => {
+  try {
+    const response = await AioveuMaterialAPI.getAllMaterialOptions();
+    if (Array.isArray(response)) {
+      materialOptions.value = response.map(mat => ({
+        materialId: Number(mat.materialId),
+        materialName: mat.materialName
+      }));
+    }
+  } catch (error) {
+    console.error('加载物资列表失败:', error);
+    uni.showToast({
+      title: '加载物资列表失败',
+      icon: 'none'
+    });
+  }
+};
+
+// 仓库选择变化
+const onWarehouseChange = (e: any) => {
+  const index = e.detail.value;
+  warehouseIndex.value = index;
+  if (warehouseOptions.value[index]) {
+    formData.warehouseName = warehouseOptions.value[index].warehouseName;
+  }
+};
+
+// 物资选择变化
+const onMaterialChange = (e: any) => {
+  const index = e.detail.value;
+  materialIndex.value = index;
+  if (materialOptions.value[index]) {
+    formData.materialName = materialOptions.value[index].materialName;
+  }
+};
+
+// 生产日期选择变化
+const onProductionDateChange = (e: any) => {
+  formData.productionDate = e.detail.value;
+};
+
+// 有效期至选择变化
+const onExpiryDateChange = (e: any) => {
+  formData.expiryDate = e.detail.value;
+};
+
+// 最后入库时间选择变化
+const onLastInboundChange = (e: any) => {
+  formData.lastInbound = e.detail.value;
+};
+
+// 最后出库时间选择变化
+const onLastOutboundChange = (e: any) => {
+  formData.lastOutbound = e.detail.value;
 };
 
 // 提交表单
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!validateForm()) return;
 
-  uni.showLoading({ title: '提交中...' });
+  try {
+    uni.showLoading({ title: '提交中...' });
 
-  if (attendanceId.value) {
-    // 更新
-    AioveuAttendanceAPI.update(attendanceId.value, formData)
-      .then(() => {
-        uni.showToast({
-          title: "修改成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
-  } else {
-    // 新增
-    AioveuAttendanceAPI.add(formData)
-      .then(() => {
-        uni.showToast({
-          title: "新增成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
+    if (inventoryId.value) {
+      // 更新库存
+      await AioveuInventoryAPI.update(inventoryId.value, formData);
+      uni.showToast({
+        title: "修改成功",
+        icon: "success"
+      });
+    } else {
+      // 新增库存
+      await AioveuInventoryAPI.add(formData);
+      uni.showToast({
+        title: "新增成功",
+        icon: "success"
+      });
+    }
+
+    // 返回列表页
+    uni.navigateBack();
+  } catch (error) {
+    console.error('提交表单失败:', error);
+    uni.showToast({
+      title: "提交失败",
+      icon: "none"
+    });
+  } finally {
+    uni.hideLoading();
   }
 };
 
 // 表单验证
 const validateForm = () => {
-  if (!formData.employeeName) {
+  if (!formData.warehouseName) {
     uni.showToast({
-      title: "请选择员工",
+      title: "请选择仓库",
       icon: "none"
     });
     return false;
   }
 
-  if (!formData.date) {
+  if (!formData.materialName) {
     uni.showToast({
-      title: "请选择日期",
+      title: "请选择物资",
       icon: "none"
     });
     return false;
   }
 
-  if (!formData.workHours) {
+  if (!formData.quantity) {
     uni.showToast({
-      title: "请输入工作时长",
-      icon: "none"
-    });
-    return false;
-  }
-
-  if (formData.status === undefined) {
-    uni.showToast({
-      title: "请选择考勤状态",
+      title: "请输入库存数量",
       icon: "none"
     });
     return false;
@@ -348,7 +401,7 @@ const handleCancel = () => {
   font-weight: 500;
 }
 
-.form-input, .form-picker {
+.form-input, .form-picker, .form-textarea {
   width: 100%;
   border: 1rpx solid #e2e8f0;
   border-radius: 12rpx;
@@ -356,16 +409,21 @@ const handleCancel = () => {
   font-size: 30rpx;
 }
 
+.form-textarea {
+  height: 200rpx;
+}
+
 .picker-view {
   height: 44rpx;
   line-height: 44rpx;
 }
 
+/* 表单底部按钮容器 */
 .form-footer {
-  padding: 24rpx 30rpx;
-  background: #f8f9fa;
   display: flex;
   justify-content: space-between;
+  padding: 24rpx 30rpx;
+  background: #f8f9fa;
   gap: 24rpx;
   margin-top: 24rpx;
   border-top: 1rpx solid #eaeaea;
@@ -376,6 +434,9 @@ const handleCancel = () => {
     border-radius: 12rpx;
     font-size: 30rpx;
     border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &.cancel {
       background: #f5f5f5;

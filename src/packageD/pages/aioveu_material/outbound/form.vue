@@ -5,92 +5,173 @@
     </view>
 
     <scroll-view class="form-body" scroll-y>
-      <!-- 员工姓名 -->
+      <!-- 出库单号 -->
       <view class="form-item">
-        <text class="form-label">员工姓名</text>
+        <text class="form-label required">出库单号</text>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="请输入出库单号"
+          v-model="formData.outboundNo"
+        />
+      </view>
+
+      <!-- 物资 -->
+      <view class="form-item">
+        <text class="form-label required">物资</text>
+        <picker
+          class="form-picker"
+          mode="selector"
+          :range="materialOptions"
+          range-key="text"
+          :value="materialIndex"
+          @change="onMaterialChange"
+        >
+          <view class="picker-view">
+            {{ materialIndex >= 0 ? materialOptions[materialIndex].text : '请选择物资' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 仓库 -->
+      <view class="form-item">
+        <text class="form-label required">仓库</text>
+        <picker
+          class="form-picker"
+          mode="selector"
+          :range="warehouseOptions"
+          range-key="text"
+          :value="warehouseIndex"
+          @change="onWarehouseChange"
+        >
+          <view class="picker-view">
+            {{ warehouseIndex >= 0 ? warehouseOptions[warehouseIndex].text : '请选择仓库' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 出库数量 -->
+      <view class="form-item">
+        <text class="form-label required">出库数量</text>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="请输入出库数量"
+          v-model="formData.quantity"
+        />
+      </view>
+
+      <!-- 批次号 -->
+      <view class="form-item">
+        <text class="form-label">批次号</text>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="请输入批次号"
+          v-model="formData.batchNumber"
+        />
+      </view>
+
+      <!-- 出库时间 -->
+      <view class="form-item">
+        <text class="form-label required">出库时间</text>
+        <picker
+          class="form-picker"
+          mode="date"
+          :value="formData.outTime"
+          @change="onOutTimeChange"
+        >
+          <view class="picker-view">
+            {{ formData.outTime || '请选择出库时间' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 操作员 -->
+      <view class="form-item">
+        <text class="form-label required">操作员</text>
         <picker
           class="form-picker"
           mode="selector"
           :range="employeeOptions"
-          range-key="employeeName"
-          :value="employeeIndex"
-          @change="onEmployeeChange"
+          range-key="text"
+          :value="operatorIndex"
+          @change="onOperatorChange"
         >
           <view class="picker-view">
-            {{ employeeIndex >= 0 ? employeeOptions[employeeIndex].employeeName : '请选择员工' }}
+            {{ operatorIndex >= 0 ? employeeOptions[operatorIndex].text : '请选择操作员' }}
           </view>
         </picker>
       </view>
 
-      <!-- 日期 -->
+      <!-- 领用人 -->
       <view class="form-item">
-        <text class="form-label">日期</text>
-        <picker
-          class="form-picker"
-          mode="date"
-          :value="formData.date"
-          @change="onDateChange"
-        >
-          <view class="picker-view">
-            {{ formData.date || '请选择日期' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 上班打卡时间 -->
-      <view class="form-item">
-        <text class="form-label">上班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkinTime"
-          @change="onCheckinTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkinTime || '请选择上班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 下班打卡时间 -->
-      <view class="form-item">
-        <text class="form-label">下班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkoutTime"
-          @change="onCheckoutTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkoutTime || '请选择下班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 工作时长 -->
-      <view class="form-item">
-        <text class="form-label">工作时长(小时)</text>
-        <input
-          type="number"
-          class="form-input"
-          placeholder="请输入工作时长"
-          v-model="formData.workHours"
-        />
-      </view>
-
-      <!-- 考勤状态 -->
-      <view class="form-item">
-        <text class="form-label">考勤状态</text>
+        <text class="form-label required">领用人</text>
         <picker
           class="form-picker"
           mode="selector"
-          :range="attendanceStatusOptions"
-          range-key="label"
+          :range="employeeOptions"
+          range-key="text"
+          :value="recipientIndex"
+          @change="onRecipientChange"
+        >
+          <view class="picker-view">
+            {{ recipientIndex >= 0 ? employeeOptions[recipientIndex].text : '请选择领用人' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 领用部门 -->
+      <view class="form-item">
+        <text class="form-label required">领用部门</text>
+        <picker
+          class="form-picker"
+          mode="selector"
+          :range="deptOptions"
+          range-key="text"
+          :value="deptIndex"
+          @change="onDeptChange"
+        >
+          <view class="picker-view">
+            {{ deptIndex >= 0 ? deptOptions[deptIndex].text : '请选择领用部门' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 用途说明 -->
+      <view class="form-item">
+        <text class="form-label">用途说明</text>
+        <textarea
+          class="form-textarea"
+          placeholder="请输入用途说明"
+          v-model="formData.purpose"
+        />
+      </view>
+
+      <!-- 关联项目ID -->
+      <view class="form-item">
+        <text class="form-label">关联项目ID</text>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="请输入关联项目ID"
+          v-model="formData.projectId"
+        />
+      </view>
+
+      <!-- 状态 -->
+      <view class="form-item">
+        <text class="form-label required">状态</text>
+        <picker
+          class="form-picker"
+          mode="selector"
+          :range="statusOptions"
+          range-key="text"
           :value="statusIndex"
           @change="onStatusChange"
         >
           <view class="picker-view">
-            {{ statusIndex >= 0 ? attendanceStatusOptions[statusIndex].label : '请选择状态' }}
+            {{ statusIndex >= 0 ? statusOptions[statusIndex].text : '请选择状态' }}
           </view>
         </picker>
       </view>
@@ -106,182 +187,333 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import AioveuAttendanceAPI, {
-  AioveuAttendanceForm
-} from "@/packageC/api/aioveuAttendance/aioveu-attendance";
-import AioveuEmployeeAPI, { EmployeeOptionVO } from "@/packageC/api/aioveuEmployee/aioveu-employee";
+import AioveuOutboundAPI, { AioveuOutboundForm } from '@/packageD/api/aioveuOutbound/aioveu-outbound';
 import DictAPI, { DictItemOption } from '@/api/system/dict';
+import AioveuMaterialAPI, { MaterialOptionVO } from '@/packageD/api/aioveuMaterial/aioveu-material';
+import AioveuWarehouseAPI, { WarehouseOptionVO } from '@/packageD/api/aioveuWarehouse/aioveu-warehouse';
+import AioveuDepartmentAPI, { DeptOptionVO } from '@/packageD/api/aioveuDepartment/aioveu-department';
+import AioveuEmployeeAPI, { EmployeeOptionVO } from '@/packageD/api/aioveuEmployee/aioveu-employee';
 
-const formTitle = ref('新增考勤');
-const attendanceId = ref<number | undefined>(undefined);
-const loading = ref(false);
+const formTitle = ref('新增出库记录');
+const editingOutboundId = ref<number | undefined>(undefined);
 
-const formData = reactive<AioveuAttendanceForm>({
-  employeeName: '',
-  // date: '',
-  // checkinTime: '',
-  // checkoutTime: '',
-  workHours: undefined,
+// 表单数据
+const formData = reactive<AioveuOutboundForm>({
+  outboundNo: '',
+  materialName: '',
+  warehouseName: '',
+  quantity: 0,
+  batchNumber: '',
+  // outTime: '',
+  operatorName: '',
+  recipientName: '',
+  departmentName: '',
+  purpose: '',
+  // projectId: '',
   status: undefined
 });
 
-const employeeOptions = ref<EmployeeOptionVO[]>([]);
-const attendanceStatusOptions = ref<DictItemOption[]>([]);
+// 选项
+const statusOptions = ref<{value: number, text: string}[]>([]);
+const materialOptions = ref<{value: string, text: string}[]>([]);
+const warehouseOptions = ref<{value: string, text: string}[]>([]);
+const deptOptions = ref<{value: string, text: string}[]>([]);
+const employeeOptions = ref<{value: string, text: string}[]>([]);
 
-const employeeIndex = ref(-1);
+// 当前选中索引
+const materialIndex = ref(-1);
+const warehouseIndex = ref(-1);
+const deptIndex = ref(-1);
+const operatorIndex = ref(-1);
+const recipientIndex = ref(-1);
 const statusIndex = ref(-1);
 
 onLoad((options: any) => {
-  console.log('页面参数:', options);
-
-  if (options.attendanceId) {
-    attendanceId.value = Number(options.attendanceId);
-    formTitle.value = '编辑考勤';
-    loadAttendanceData();
-  } else {
-    formTitle.value = '新增考勤';
+  if (options && options.id) {
+    editingOutboundId.value = Number(options.id);
+    formTitle.value = '编辑出库记录';
+    loadFormData(Number(options.id));
   }
 
-  loadEmployees();
-  loadAttendanceStatus();
+  // 加载选项数据
+  loadStatusOptions();
+  loadMaterialOptions();
+  loadWarehouseOptions();
+  loadDeptOptions();
+  loadEmployeeOptions();
 });
 
-// 加载考勤数据
-const loadAttendanceData = () => {
-  if (!attendanceId.value) return;
-
-  loading.value = true;
-  AioveuAttendanceAPI.getFormData(attendanceId.value)
-    .then((data) => {
-      Object.assign(formData, data);
-
-      // 设置员工索引
-      if (formData.employeeName) {
-        const index = employeeOptions.value.findIndex(
-          emp => emp.employeeName === formData.employeeName
-        );
-        employeeIndex.value = index;
-      }
-
-      // 设置状态索引
-      if (formData.status !== undefined) {
-        const index = attendanceStatusOptions.value.findIndex(
-          item => item.value === formData.status?.toString()
-        );
-        statusIndex.value = index;
-      }
-    })
-    .finally(() => {
-      loading.value = false;
+// 加载表单数据
+const loadFormData = async (id: number) => {
+  try {
+    const data = await AioveuOutboundAPI.getFormData(id);
+    Object.assign(formData, data);
+    setSelectedIndexes();
+  } catch (error) {
+    console.error('加载出库数据失败:', error);
+    uni.showToast({
+      title: '加载数据失败',
+      icon: 'none'
     });
-};
-
-// 加载员工选项
-const loadEmployees = () => {
-  AioveuEmployeeAPI.getAllEmployeeOptions()
-    .then(response => {
-      if (Array.isArray(response)) {
-        employeeOptions.value = response.map(emp => ({
-          employeeId: Number(emp.employeeId),
-          employeeName: emp.employeeName
-        }));
-      }
-    });
-};
-
-// 加载考勤状态选项
-const loadAttendanceStatus = () => {
-  DictAPI.getDictItems('attendance_status')
-    .then(response => {
-      attendanceStatusOptions.value = response;
-    });
-};
-
-// 员工选择变化
-const onEmployeeChange = (e: any) => {
-  const index = e.detail.value;
-  employeeIndex.value = index;
-  if (employeeOptions.value[index]) {
-    formData.employeeName = employeeOptions.value[index].employeeName;
   }
 };
 
-// 日期选择变化
-const onDateChange = (e: any) => {
-  formData.date = e.detail.value;
+// 设置选中索引
+const setSelectedIndexes = () => {
+  // 物资
+  if (formData.materialName) {
+    const index = materialOptions.value.findIndex(
+      item => item.value === formData.materialName
+    );
+    materialIndex.value = index;
+  }
+
+  // 仓库
+  if (formData.warehouseName) {
+    const index = warehouseOptions.value.findIndex(
+      item => item.value === formData.warehouseName
+    );
+    warehouseIndex.value = index;
+  }
+
+  // 领用部门
+  if (formData.departmentName) {
+    const index = deptOptions.value.findIndex(
+      item => item.value === formData.departmentName
+    );
+    deptIndex.value = index;
+  }
+
+  // 操作员
+  if (formData.operatorName) {
+    const index = employeeOptions.value.findIndex(
+      item => item.value === formData.operatorName
+    );
+    operatorIndex.value = index;
+  }
+
+  // 领用人
+  if (formData.recipientName) {
+    const index = employeeOptions.value.findIndex(
+      item => item.value === formData.recipientName
+    );
+    recipientIndex.value = index;
+  }
+
+  // 状态
+  if (formData.status !== undefined) {
+    const index = statusOptions.value.findIndex(
+      item => item.value === formData.status
+    );
+    statusIndex.value = index;
+  }
 };
 
-// 上班时间选择变化
-const onCheckinTimeChange = (e: any) => {
-  formData.checkinTime = e.detail.value;
+// 加载字典
+const loadStatusOptions = () => {
+  DictAPI.getDictItems('outbound_status').then(response => {
+    statusOptions.value = response.map(item => ({
+      value: Number(item.value),
+      text: item.label
+    }));
+  });
 };
 
-// 下班时间选择变化
-const onCheckoutTimeChange = (e: any) => {
-  formData.checkoutTime = e.detail.value;
+// 加载选项
+const loadMaterialOptions = () => {
+  AioveuMaterialAPI.getAllMaterialOptions().then(response => {
+    materialOptions.value = response.map(item => ({
+      value: item.materialName,
+      text: item.materialName
+    }));
+  });
+};
+
+const loadWarehouseOptions = () => {
+  AioveuWarehouseAPI.getAllWarehouseOptions().then(response => {
+    warehouseOptions.value = response.map(item => ({
+      value: item.warehouseName,
+      text: item.warehouseName
+    }));
+  });
+};
+
+const loadDeptOptions = () => {
+  AioveuDepartmentAPI.getAllDepartmentOptions().then(response => {
+    deptOptions.value = response.map(item => ({
+      value: item.deptName,
+      text: item.deptName
+    }));
+  });
+};
+
+const loadEmployeeOptions = () => {
+  AioveuEmployeeAPI.getAllEmployeeOptions().then(response => {
+    employeeOptions.value = response.map(item => ({
+      value: item.employeeName,
+      text: item.employeeName
+    }));
+  });
+};
+
+// 物资选择变化
+const onMaterialChange = (e: any) => {
+  const index = e.detail.value;
+  materialIndex.value = index;
+  if (materialOptions.value[index]) {
+    formData.materialName = materialOptions.value[index].value;
+  }
+};
+
+// 仓库选择变化
+const onWarehouseChange = (e: any) => {
+  const index = e.detail.value;
+  warehouseIndex.value = index;
+  if (warehouseOptions.value[index]) {
+    formData.warehouseName = warehouseOptions.value[index].value;
+  }
+};
+
+// 部门选择变化
+const onDeptChange = (e: any) => {
+  const index = e.detail.value;
+  deptIndex.value = index;
+  if (deptOptions.value[index]) {
+    formData.departmentName = deptOptions.value[index].value;
+  }
+};
+
+// 操作员选择变化
+const onOperatorChange = (e: any) => {
+  const index = e.detail.value;
+  operatorIndex.value = index;
+  if (employeeOptions.value[index]) {
+    formData.operatorName = employeeOptions.value[index].value;
+  }
+};
+
+// 领用人选择变化
+const onRecipientChange = (e: any) => {
+  const index = e.detail.value;
+  recipientIndex.value = index;
+  if (employeeOptions.value[index]) {
+    formData.recipientName = employeeOptions.value[index].value;
+  }
 };
 
 // 状态选择变化
 const onStatusChange = (e: any) => {
   const index = e.detail.value;
   statusIndex.value = index;
-  if (attendanceStatusOptions.value[index]) {
-    formData.status = Number(attendanceStatusOptions.value[index].value);
+  if (statusOptions.value[index]) {
+    formData.status = statusOptions.value[index].value;
   }
 };
 
+// 出库时间选择变化
+const onOutTimeChange = (e: any) => {
+  formData.outTime = e.detail.value;
+};
+
 // 提交表单
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!validateForm()) return;
 
-  uni.showLoading({ title: '提交中...' });
+  try {
+    uni.showLoading({ title: '提交中...' });
 
-  if (attendanceId.value) {
-    // 更新
-    AioveuAttendanceAPI.update(attendanceId.value, formData)
-      .then(() => {
-        uni.showToast({
-          title: "修改成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
-  } else {
-    // 新增
-    AioveuAttendanceAPI.add(formData)
-      .then(() => {
-        uni.showToast({
-          title: "新增成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
+    const id = editingOutboundId.value;
+
+    if (id) {
+      // 更新出库记录
+      await AioveuOutboundAPI.update(id, formData);
+      uni.showToast({
+        title: "修改成功",
+        icon: "success"
+      });
+    } else {
+      // 新增出库记录
+      await AioveuOutboundAPI.add(formData);
+      uni.showToast({
+        title: "新增成功",
+        icon: "success"
+      });
+    }
+
+    // 返回列表页
+    uni.navigateBack();
+  } catch (error) {
+    console.error('提交表单失败:', error);
+    uni.showToast({
+      title: "提交失败",
+      icon: "none"
+    });
+  } finally {
+    uni.hideLoading();
   }
 };
 
 // 表单验证
 const validateForm = () => {
-  if (!formData.employeeName) {
+  if (!formData.outboundNo) {
     uni.showToast({
-      title: "请选择员工",
+      title: "请输入出库单号",
       icon: "none"
     });
     return false;
   }
 
-  if (!formData.date) {
+  if (!formData.materialName) {
     uni.showToast({
-      title: "请选择日期",
+      title: "请选择物资",
       icon: "none"
     });
     return false;
   }
 
-  if (!formData.workHours) {
+  if (!formData.warehouseName) {
     uni.showToast({
-      title: "请输入工作时长",
+      title: "请选择仓库",
+      icon: "none"
+    });
+    return false;
+  }
+
+  if (!formData.quantity) {
+    uni.showToast({
+      title: "请输入出库数量",
+      icon: "none"
+    });
+    return false;
+  }
+
+  if (!formData.outTime) {
+    uni.showToast({
+      title: "请选择出库时间",
+      icon: "none"
+    });
+    return false;
+  }
+
+  if (!formData.operatorName) {
+    uni.showToast({
+      title: "请选择操作员",
+      icon: "none"
+    });
+    return false;
+  }
+
+  if (!formData.recipientName) {
+    uni.showToast({
+      title: "请选择领用人",
+      icon: "none"
+    });
+    return false;
+  }
+
+  if (!formData.departmentName) {
+    uni.showToast({
+      title: "请选择领用部门",
       icon: "none"
     });
     return false;
@@ -289,7 +521,7 @@ const validateForm = () => {
 
   if (formData.status === undefined) {
     uni.showToast({
-      title: "请选择考勤状态",
+      title: "请选择状态",
       icon: "none"
     });
     return false;
@@ -309,31 +541,27 @@ const handleCancel = () => {
   padding: 20rpx;
   background-color: #f5f7fa;
   min-height: 100vh;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 .form-header {
   padding: 30rpx;
-  background: white;
-  border-radius: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  margin-bottom: 24rpx;
+  background: linear-gradient(135deg, #3498db, #2c3e50);
+  color: white;
+  text-align: center;
+  border-radius: 16rpx 16rpx 0 0;
 
   .form-title {
     font-size: 36rpx;
     font-weight: 600;
-    color: #1a1a1a;
-    text-align: center;
   }
 }
 
 .form-body {
-  background: white;
-  border-radius: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
   padding: 24rpx;
+  background-color: #fff;
+  border-radius: 0 0 16rpx 16rpx;
   max-height: 70vh;
+  overflow-y: auto;
 }
 
 .form-item {
@@ -346,14 +574,25 @@ const handleCancel = () => {
   color: #666;
   margin-bottom: 16rpx;
   font-weight: 500;
+
+  &.required::after {
+    content: '*';
+    color: #e74c3c;
+    margin-left: 8rpx;
+  }
 }
 
-.form-input, .form-picker {
+.form-input, .form-picker, .form-textarea {
   width: 100%;
   border: 1rpx solid #e2e8f0;
   border-radius: 12rpx;
   padding: 24rpx;
-  font-size: 30rpx;
+  font-size: 28rpx;
+  background-color: #fff;
+}
+
+.form-textarea {
+  height: 200rpx;
 }
 
 .picker-view {
@@ -362,19 +601,21 @@ const handleCancel = () => {
 }
 
 .form-footer {
-  padding: 24rpx 30rpx;
-  background: #f8f9fa;
   display: flex;
   justify-content: space-between;
-  gap: 24rpx;
-  margin-top: 24rpx;
+  padding: 24rpx;
+  background: #f8f9fa;
   border-top: 1rpx solid #eaeaea;
+  margin-top: 24rpx;
+  border-radius: 16rpx;
 
   .form-btn {
     flex: 1;
+    margin: 0 12rpx;
     padding: 20rpx 0;
     border-radius: 12rpx;
-    font-size: 30rpx;
+    font-size: 28rpx;
+    text-align: center;
     border: none;
 
     &.cancel {

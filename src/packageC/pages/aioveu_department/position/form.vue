@@ -5,94 +5,59 @@
     </view>
 
     <scroll-view class="form-body" scroll-y>
-      <!-- 员工姓名 -->
+      <!-- 岗位名称 -->
       <view class="form-item">
-        <text class="form-label">员工姓名</text>
-        <picker
-          class="form-picker"
-          mode="selector"
-          :range="employeeOptions"
-          range-key="employeeName"
-          :value="employeeIndex"
-          @change="onEmployeeChange"
-        >
-          <view class="picker-view">
-            {{ employeeIndex >= 0 ? employeeOptions[employeeIndex].employeeName : '请选择员工' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 日期 -->
-      <view class="form-item">
-        <text class="form-label">日期</text>
-        <picker
-          class="form-picker"
-          mode="date"
-          :value="formData.date"
-          @change="onDateChange"
-        >
-          <view class="picker-view">
-            {{ formData.date || '请选择日期' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 上班打卡时间 -->
-      <view class="form-item">
-        <text class="form-label">上班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkinTime"
-          @change="onCheckinTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkinTime || '请选择上班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 下班打卡时间 -->
-      <view class="form-item">
-        <text class="form-label">下班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkoutTime"
-          @change="onCheckoutTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkoutTime || '请选择下班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 工作时长 -->
-      <view class="form-item">
-        <text class="form-label">工作时长(小时)</text>
+        <text class="form-label">岗位名称</text>
         <input
-          type="number"
+          type="text"
           class="form-input"
-          placeholder="请输入工作时长"
-          v-model="formData.workHours"
+          placeholder="请输入岗位名称"
+          v-model="formData.positionName"
         />
       </view>
 
-      <!-- 考勤状态 -->
+      <!-- 所属部门 -->
       <view class="form-item">
-        <text class="form-label">考勤状态</text>
+        <text class="form-label">所属部门</text>
         <picker
           class="form-picker"
           mode="selector"
-          :range="attendanceStatusOptions"
-          range-key="label"
-          :value="statusIndex"
-          @change="onStatusChange"
+          :range="deptOptions"
+          range-key="deptName"
+          :value="deptIndex"
+          @change="onDeptChange"
         >
           <view class="picker-view">
-            {{ statusIndex >= 0 ? attendanceStatusOptions[statusIndex].label : '请选择状态' }}
+            {{ deptIndex >= 0 ? deptOptions[deptIndex].deptName : '请选择所属部门' }}
           </view>
         </picker>
+      </view>
+
+      <!-- 职级 -->
+      <view class="form-item">
+        <text class="form-label">职级</text>
+        <picker
+          class="form-picker"
+          mode="selector"
+          :range="positionLevelOptions"
+          range-key="label"
+          :value="levelIndex"
+          @change="onLevelChange"
+        >
+          <view class="picker-view">
+            {{ levelIndex >= 0 ? positionLevelOptions[levelIndex].label : '请选择职级' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 岗位描述 -->
+      <view class="form-item">
+        <text class="form-label">岗位描述</text>
+        <textarea
+          class="form-textarea"
+          placeholder="请输入岗位描述"
+          v-model="formData.description"
+        />
       </view>
     </scroll-view>
 
@@ -106,190 +71,187 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import AioveuAttendanceAPI, {
-  AioveuAttendanceForm
-} from "@/packageC/api/aioveuAttendance/aioveu-attendance";
-import AioveuEmployeeAPI, { EmployeeOptionVO } from "@/packageC/api/aioveuEmployee/aioveu-employee";
+import AioveuPositionAPI, {
+  AioveuPositionForm
+} from "@/packageC/api/aioveuPosition/aioveu-position";
+import AioveuDepartmentAPI, { DeptOptionVO } from "@/packageC/api/aioveuDepartment/aioveu-department";
 import DictAPI, { DictItemOption } from '@/api/system/dict';
 
-const formTitle = ref('新增考勤');
-const attendanceId = ref<number | undefined>(undefined);
+const formTitle = ref('新增岗位');
+const positionId = ref<number | undefined>(undefined);
 const loading = ref(false);
 
-const formData = reactive<AioveuAttendanceForm>({
-  employeeName: '',
-  // date: '',
-  // checkinTime: '',
-  // checkoutTime: '',
-  workHours: undefined,
-  status: undefined
-});
+// 在组件中添加一个变量存储当前编辑的ID
+const editingPositionId = ref<number | undefined>(undefined);
 
-const employeeOptions = ref<EmployeeOptionVO[]>([]);
-const attendanceStatusOptions = ref<DictItemOption[]>([]);
+const formData = reactive<AioveuPositionForm>({});
 
-const employeeIndex = ref(-1);
-const statusIndex = ref(-1);
+const deptOptions = ref<DeptOptionVO[]>([]);
+const positionLevelOptions = ref<DictItemOption[]>([]);
+
+const deptIndex = ref(-1);
+const levelIndex = ref(-1);
 
 onLoad((options: any) => {
   console.log('页面参数:', options);
 
-  if (options.attendanceId) {
-    attendanceId.value = Number(options.attendanceId);
-    formTitle.value = '编辑考勤';
-    loadAttendanceData();
+  if (options.id) {
+    positionId.value = Number(options.id);
+    formTitle.value = '编辑岗位';
+    loadPositionData();
   } else {
-    formTitle.value = '新增考勤';
+    formTitle.value = '新增岗位';
   }
 
-  loadEmployees();
-  loadAttendanceStatus();
+  // 存储编辑ID
+  editingPositionId.value = positionId.value;
+
+  // 加载选项数据
+  loadDeptOptions();
+  loadDictOptions();
 });
 
-// 加载考勤数据
-const loadAttendanceData = () => {
-  if (!attendanceId.value) return;
+// 加载岗位数据
+const loadPositionData = async () => {
+  if (!positionId.value) return;
 
-  loading.value = true;
-  AioveuAttendanceAPI.getFormData(attendanceId.value)
-    .then((data) => {
-      Object.assign(formData, data);
+  try {
+    loading.value = true;
+    const data = await AioveuPositionAPI.getFormData(positionId.value);
+    Object.assign(formData, data);
 
-      // 设置员工索引
-      if (formData.employeeName) {
-        const index = employeeOptions.value.findIndex(
-          emp => emp.employeeName === formData.employeeName
-        );
-        employeeIndex.value = index;
-      }
+    // 设置选项索引
+    if (formData.deptName) {
+      const deptIdx = deptOptions.value.findIndex(dept => dept.deptName === formData.deptName);
+      deptIndex.value = deptIdx;
+    }
 
-      // 设置状态索引
-      if (formData.status !== undefined) {
-        const index = attendanceStatusOptions.value.findIndex(
-          item => item.value === formData.status?.toString()
-        );
-        statusIndex.value = index;
-      }
-    })
-    .finally(() => {
-      loading.value = false;
+    if (formData.positionLevel !== undefined) {
+      const levelIdx = positionLevelOptions.value.findIndex(opt => Number(opt.value) === formData.positionLevel);
+      levelIndex.value = levelIdx;
+    }
+  } catch (error) {
+    console.error('加载岗位数据失败:', error);
+    uni.showToast({
+      title: '加载数据失败',
+      icon: 'none'
     });
-};
-
-// 加载员工选项
-const loadEmployees = () => {
-  AioveuEmployeeAPI.getAllEmployeeOptions()
-    .then(response => {
-      if (Array.isArray(response)) {
-        employeeOptions.value = response.map(emp => ({
-          employeeId: Number(emp.employeeId),
-          employeeName: emp.employeeName
-        }));
-      }
-    });
-};
-
-// 加载考勤状态选项
-const loadAttendanceStatus = () => {
-  DictAPI.getDictItems('attendance_status')
-    .then(response => {
-      attendanceStatusOptions.value = response;
-    });
-};
-
-// 员工选择变化
-const onEmployeeChange = (e: any) => {
-  const index = e.detail.value;
-  employeeIndex.value = index;
-  if (employeeOptions.value[index]) {
-    formData.employeeName = employeeOptions.value[index].employeeName;
+  } finally {
+    loading.value = false;
   }
 };
 
-// 日期选择变化
-const onDateChange = (e: any) => {
-  formData.date = e.detail.value;
+// 加载部门选项
+const loadDeptOptions = async () => {
+  try {
+    const response = await AioveuDepartmentAPI.getAllDepartmentOptions();
+    if (Array.isArray(response)) {
+      deptOptions.value = response.map(dept => ({
+        deptId: Number(dept.deptId),
+        deptName: dept.deptName
+      }));
+    }
+  } catch (error) {
+    console.error('加载部门列表失败:', error);
+    uni.showToast({
+      title: '加载部门列表失败',
+      icon: 'none'
+    });
+  }
 };
 
-// 上班时间选择变化
-const onCheckinTimeChange = (e: any) => {
-  formData.checkinTime = e.detail.value;
+// 加载字典选项
+const loadDictOptions = async () => {
+  try {
+    const response = await DictAPI.getDictItems('position_level');
+    positionLevelOptions.value = response || [];
+  } catch (error) {
+    console.error('加载字典选项失败:', error);
+    uni.showToast({
+      title: '加载选项失败',
+      icon: 'none'
+    });
+  }
 };
 
-// 下班时间选择变化
-const onCheckoutTimeChange = (e: any) => {
-  formData.checkoutTime = e.detail.value;
-};
-
-// 状态选择变化
-const onStatusChange = (e: any) => {
+// 部门选择变化
+const onDeptChange = (e: any) => {
   const index = e.detail.value;
-  statusIndex.value = index;
-  if (attendanceStatusOptions.value[index]) {
-    formData.status = Number(attendanceStatusOptions.value[index].value);
+  deptIndex.value = index;
+  if (deptOptions.value[index]) {
+    formData.deptName = deptOptions.value[index].deptName;
+  }
+};
+
+// 职级选择变化
+const onLevelChange = (e: any) => {
+  const index = e.detail.value;
+  levelIndex.value = index;
+  if (positionLevelOptions.value[index]) {
+    formData.positionLevel = Number(positionLevelOptions.value[index].value);
   }
 };
 
 // 提交表单
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!validateForm()) return;
 
-  uni.showLoading({ title: '提交中...' });
+  try {
+    uni.showLoading({ title: '提交中...' });
 
-  if (attendanceId.value) {
-    // 更新
-    AioveuAttendanceAPI.update(attendanceId.value, formData)
-      .then(() => {
-        uni.showToast({
-          title: "修改成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
-  } else {
-    // 新增
-    AioveuAttendanceAPI.add(formData)
-      .then(() => {
-        uni.showToast({
-          title: "新增成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
+    // 使用存储的ID
+    const id = editingPositionId.value;
+
+    if (id) {
+      // 更新岗位
+      await AioveuPositionAPI.update(id, formData);
+      uni.showToast({
+        title: "修改成功",
+        icon: "success"
+      });
+    } else {
+      // 新增岗位
+      await AioveuPositionAPI.add(formData);
+      uni.showToast({
+        title: "新增成功",
+        icon: "success"
+      });
+    }
+
+    // 返回列表页
+    uni.navigateBack();
+  } catch (error) {
+    console.error('提交表单失败:', error);
+    uni.showToast({
+      title: "提交失败",
+      icon: "none"
+    });
+  } finally {
+    uni.hideLoading();
   }
 };
 
 // 表单验证
 const validateForm = () => {
-  if (!formData.employeeName) {
+  if (!formData.positionName) {
     uni.showToast({
-      title: "请选择员工",
+      title: "请输入岗位名称",
       icon: "none"
     });
     return false;
   }
 
-  if (!formData.date) {
+  if (!formData.deptName) {
     uni.showToast({
-      title: "请选择日期",
+      title: "请选择所属部门",
       icon: "none"
     });
     return false;
   }
 
-  if (!formData.workHours) {
+  if (formData.positionLevel === undefined) {
     uni.showToast({
-      title: "请输入工作时长",
-      icon: "none"
-    });
-    return false;
-  }
-
-  if (formData.status === undefined) {
-    uni.showToast({
-      title: "请选择考勤状态",
+      title: "请选择职级",
       icon: "none"
     });
     return false;
@@ -348,12 +310,17 @@ const handleCancel = () => {
   font-weight: 500;
 }
 
-.form-input, .form-picker {
-  width: 100%;
+.form-input, .form-picker, .form-textarea {
   border: 1rpx solid #e2e8f0;
   border-radius: 12rpx;
   padding: 24rpx;
   font-size: 30rpx;
+  width: 100%;
+  background-color: white;
+}
+
+.form-textarea {
+  height: 200rpx;
 }
 
 .picker-view {
@@ -361,11 +328,12 @@ const handleCancel = () => {
   line-height: 44rpx;
 }
 
+/* 表单底部按钮容器 */
 .form-footer {
-  padding: 24rpx 30rpx;
-  background: #f8f9fa;
   display: flex;
   justify-content: space-between;
+  padding: 24rpx 30rpx;
+  background: #f8f9fa;
   gap: 24rpx;
   margin-top: 24rpx;
   border-top: 1rpx solid #eaeaea;
@@ -376,6 +344,9 @@ const handleCancel = () => {
     border-radius: 12rpx;
     font-size: 30rpx;
     border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &.cancel {
       background: #f5f5f5;

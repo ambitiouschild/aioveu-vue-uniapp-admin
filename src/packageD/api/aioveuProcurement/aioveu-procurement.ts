@@ -5,7 +5,7 @@ const AIOVEUPROCUREMENT_BASE_URL = "/api/v1/aioveu-procurement";
 const AioveuProcurementAPI = {
     /** 获取采购流程分页数据 */
     getPage(queryParams?: AioveuProcurementPageQuery) {
-        return request<PageResult<AioveuProcurementPageVO[]>>({
+        return request< PageResult<AioveuProcurementPageVO[]>>({
             url: `${AIOVEUPROCUREMENT_BASE_URL}/page`,
             method: "GET",
             data: queryParams,

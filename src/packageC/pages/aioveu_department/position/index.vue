@@ -8,6 +8,7 @@
       </view>
 
       <view class="filter-content" v-if="showFilter">
+        <!-- 岗位ID -->
         <view class="filter-item">
           <text class="filter-label">岗位ID</text>
           <input
@@ -19,13 +20,65 @@
           />
         </view>
 
+        <!-- 岗位名称 -->
         <view class="filter-item">
           <text class="filter-label">岗位名称</text>
+          <picker
+            class="filter-picker"
+            mode="selector"
+            :range="positionOptions"
+            range-key="positionName"
+            :value="positionIndex"
+            @change="onPositionChange"
+          >
+            <view class="picker-view">
+              {{ positionIndex >= 0 ? positionOptions[positionIndex].positionName : '请选择岗位名称' }}
+            </view>
+          </picker>
+        </view>
+
+        <!-- 所属部门 -->
+        <view class="filter-item">
+          <text class="filter-label">所属部门</text>
+          <picker
+            class="filter-picker"
+            mode="selector"
+            :range="deptOptions"
+            range-key="deptName"
+            :value="deptIndex"
+            @change="onDeptChange"
+          >
+            <view class="picker-view">
+              {{ deptIndex >= 0 ? deptOptions[deptIndex].deptName : '请选择所属部门' }}
+            </view>
+          </picker>
+        </view>
+
+        <!-- 职级 -->
+        <view class="filter-item">
+          <text class="filter-label">职级</text>
+          <picker
+            class="filter-picker"
+            mode="selector"
+            :range="positionLevelOptions"
+            range-key="label"
+            :value="levelIndex"
+            @change="onLevelChange"
+          >
+            <view class="picker-view">
+              {{ levelIndex >= 0 ? positionLevelOptions[levelIndex].label : '请选择职级' }}
+            </view>
+          </picker>
+        </view>
+
+        <!-- 岗位描述 -->
+        <view class="filter-item">
+          <text class="filter-label">岗位描述</text>
           <input
             type="text"
             class="filter-input"
-            placeholder="请输入岗位名称"
-            v-model="queryParams.positionName"
+            placeholder="请输入岗位描述"
+            v-model="queryParams.description"
             @confirm="handleQuery"
           />
         </view>
@@ -40,7 +93,7 @@
     <!-- 操作按钮 -->
     <view class="action-buttons">
       <button
-        :v-has-perm="['aioveuPosition:aioveu-position:add']"
+        :v-has-perm="(['aioveuPosition:aioveu-position:add'])"
         class="action-btn add"
         @click="handleOpenDialog()"
       >
@@ -48,7 +101,7 @@
         <text>新增</text>
       </button>
       <button
-        :v-has-perm="['aioveuPosition:aioveu-position:delete']"
+        :v-has-perm="(['aioveuPosition:aioveu-position:delete'])"
         class="action-btn delete"
         :disabled="removeIds.length === 0"
         @click="handleDelete()"
@@ -65,7 +118,7 @@
       </view>
 
       <view v-else-if="pageData.length === 0" class="empty-state">
-        <text class="empty-icon">📁</text>
+        <text class="empty-icon">👔</text>
         <text class="empty-text">暂无岗位数据</text>
       </view>
 
@@ -76,46 +129,56 @@
         class="position-card"
       >
         <view class="card-header">
-          <text class="position-name">{{ item.positionName }}</text>
           <text class="position-id">ID: {{ item.positionId }}</text>
+          <text class="position-name">{{ item.positionName }}</text>
         </view>
 
         <view class="card-content">
-          <view class="info-item">
+          <view class="info-row">
             <text class="info-label">所属部门:</text>
-            <text class="info-value">{{ item.deptName || '无' }}</text>
+            <text class="info-value">{{ item.deptName }}</text>
           </view>
-          <view class="info-item">
+
+          <view class="info-row">
             <text class="info-label">职级:</text>
-            <text class="info-value">{{ item.positionLevel }}</text>
+            <text class="info-value">{{ getLevelLabel(item.positionLevel) }}</text>
           </view>
-          <view class="info-item">
+
+          <view class="info-row">
             <text class="info-label">岗位描述:</text>
-            <text class="info-value">{{ item.description || '无' }}</text>
+            <text class="info-value">{{ item.description || '-' }}</text>
           </view>
-          <view class="info-item">
+
+          <view class="info-row">
             <text class="info-label">创建时间:</text>
             <text class="info-value">{{ item.createTime }}</text>
+          </view>
+
+          <view class="info-row">
+            <text class="info-label">更新时间:</text>
+            <text class="info-value">{{ item.updateTime }}</text>
           </view>
         </view>
 
         <view class="card-footer">
-          <button
-            :v-has-perm="['aioveuPosition:aioveu-position:edit']"
-            class="action-btn edit"
-            @click="handleOpenDialog(item.positionId)"
-          >
-            <text>✏️</text>
-            <text>编辑</text>
-          </button>
-          <button
-            :v-has-perm="['aioveuPosition:aioveu-position:delete']"
-            class="action-btn delete"
-            @click="handleDelete(item.positionId)"
-          >
-            <text>🗑️</text>
-            <text>删除</text>
-          </button>
+          <view class="action-buttons">
+            <button
+              :v-has-perm="(['aioveuPosition:aioveu-position:edit'])"
+              class="action-btn edit"
+              @click="handleOpenDialog(item.positionId)"
+            >
+              <text>✏️</text>
+              <text>编辑</text>
+            </button>
+            <button
+              :v-has-perm="(['aioveuPosition:aioveu-position:delete'])"
+              class="action-btn delete"
+              @click="handleDelete(item.positionId)"
+            >
+              <text>🗑️</text>
+              <text>删除</text>
+            </button>
+          </view>
         </view>
       </view>
 
@@ -140,75 +203,22 @@
         </button>
       </view>
     </view>
-
-    <!-- 表单弹窗 -->
-    <view class="dialog-mask" v-if="dialog.visible">
-      <view class="dialog-container">
-        <view class="dialog-header">
-          <text class="dialog-title">{{ dialog.title }}</text>
-          <text class="dialog-close" @click="handleCloseDialog">✕</text>
-        </view>
-
-        <view class="dialog-body">
-          <view class="form-item">
-            <text class="form-label">岗位名称</text>
-            <input
-              type="text"
-              class="form-input"
-              placeholder="请输入岗位名称"
-              v-model="formData.positionName"
-            />
-          </view>
-
-          <view class="form-item">
-            <text class="form-label">所属部门</text>
-            <input
-              type="text"
-              class="form-input"
-              placeholder="请输入所属部门"
-              v-model="formData.deptName"
-            />
-          </view>
-
-          <view class="form-item">
-            <text class="form-label">职级</text>
-            <input
-              type="text"
-              class="form-input"
-              placeholder="请输入职级"
-              v-model="formData.positionLevel"
-            />
-          </view>
-
-          <view class="form-item">
-            <text class="form-label">岗位描述</text>
-            <textarea
-              class="form-textarea"
-              placeholder="请输入岗位描述"
-              v-model="formData.description"
-            />
-          </view>
-        </view>
-
-        <view class="dialog-footer">
-          <button class="dialog-btn cancel" @click="handleCloseDialog">取消</button>
-          <button class="dialog-btn confirm" @click="handleSubmit">提交</button>
-        </view>
-      </view>
-    </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 import AioveuPositionAPI, {
   AioveuPositionPageVO,
-  AioveuPositionForm,
-  AioveuPositionPageQuery
+  AioveuPositionPageQuery,
+  PositionOptionVO
 } from "@/packageC/api/aioveuPosition/aioveu-position";
+import AioveuDepartmentAPI, { DeptOptionVO } from "@/packageC/api/aioveuDepartment/aioveu-department";
+import DictAPI, { DictItemOption } from '@/api/system/dict';
 
 const loading = ref(false);
-const removeIds = ref<Array<number | undefined>>([]);
+const removeIds = ref<number[]>([]);
 const total = ref(0);
 const showFilter = ref(false);
 
@@ -218,22 +228,47 @@ const queryParams = reactive<AioveuPositionPageQuery>({
 });
 
 const pageData = ref<AioveuPositionPageVO[]>([]);
+const positionOptions = ref<PositionOptionVO[]>([]);
+const deptOptions = ref<DeptOptionVO[]>([]);
+const positionLevelOptions = ref<DictItemOption[]>([]);
 
-const dialog = reactive({
-  title: "",
-  visible: false,
-});
+const positionIndex = ref(-1);
+const deptIndex = ref(-1);
+const levelIndex = ref(-1);
 
-const formData = reactive<AioveuPositionForm>({
-  positionName: '',
-  deptName: '',
-  positionLevel: undefined,
-  description: undefined
-});
+// 在组件中添加一个变量存储当前编辑的ID
+const editingPositionId = ref<number | undefined>(undefined);
 
 // 切换筛选显示
 const toggleFilter = () => {
   showFilter.value = !showFilter.value;
+};
+
+// 岗位选择变化
+const onPositionChange = (e: any) => {
+  const index = e.detail.value;
+  positionIndex.value = index;
+  if (positionOptions.value[index]) {
+    queryParams.positionName = positionOptions.value[index].positionName;
+  }
+};
+
+// 部门选择变化
+const onDeptChange = (e: any) => {
+  const index = e.detail.value;
+  deptIndex.value = index;
+  if (deptOptions.value[index]) {
+    queryParams.deptId = deptOptions.value[index].deptId;
+  }
+};
+
+// 职级选择变化
+const onLevelChange = (e: any) => {
+  const index = e.detail.value;
+  levelIndex.value = index;
+  if (positionLevelOptions.value[index]) {
+    queryParams.positionLevel = Number(positionLevelOptions.value[index].value);
+  }
 };
 
 // 查询岗位
@@ -244,6 +279,13 @@ const handleQuery = () => {
       pageData.value = data.list;
       total.value = data.total;
     })
+    .catch(error => {
+      console.error('查询岗位失败:', error);
+      uni.showToast({
+        title: '加载数据失败',
+        icon: 'none'
+      });
+    })
     .finally(() => {
       loading.value = false;
     });
@@ -252,8 +294,16 @@ const handleQuery = () => {
 // 重置查询
 const handleResetQuery = () => {
   queryParams.pageNum = 1;
-  queryParams.positionId = Number(undefined);
+  // queryParams.positionId = '';
   queryParams.positionName = '';
+  queryParams.deptId = undefined;
+  queryParams.positionLevel = undefined;
+  queryParams.description = '';
+
+  positionIndex.value = -1;
+  deptIndex.value = -1;
+  levelIndex.value = -1;
+
   pageData.value = [];
   handleQuery();
 };
@@ -278,93 +328,27 @@ const nextPage = () => {
 const handleSelectionChange = (selection: AioveuPositionPageVO[]) => {
   removeIds.value = selection
     .map(item => item.positionId)
-    .filter((positionId): positionId is number => positionId !== undefined && positionId !== null) as number[];
+    .filter((id): id is number => id !== undefined && id !== null) as number[];
 };
 
-// 打开弹窗
-const handleOpenDialog = (positionId?: number) => {
+// 打开表单页
+const handleOpenDialog = (id?: number) => {
+  // 存储ID
+  editingPositionId.value = id;
 
-  editingpositionId.value = positionId;
+  let url = '/packageC/pages/aioveu_department/position/form';
 
-  if (positionId) {
-    dialog.title = "修改岗位";
-    AioveuPositionAPI.getFormData(positionId).then((data) => {
-      Object.assign(formData, data);
-      dialog.visible = true;
-    });
-  } else {
-    dialog.title = "新增岗位";
-    formData.positionName = '';
-    formData.deptName = '';
-    formData.positionLevel = undefined;
-    formData.description = undefined;
-    dialog.visible = true;
-  }
-};
-
-// 在组件中添加一个变量存储当前编辑的positionId
-const editingpositionId = ref<number | undefined>(undefined);
-
-// 关闭弹窗
-const handleCloseDialog = () => {
-  dialog.visible = false;
-};
-
-// 提交表单
-const handleSubmit = () => {
-  if (!formData.positionName) {
-    uni.showToast({
-      title: "请输入岗位名称",
-      icon: "none"
-    });
-    return;
+  if (id !== undefined) {
+    url += `?id=${id}`;
   }
 
-
-  // 确保 positionLevel 是数字类型
-  if (formData.positionLevel !== undefined) {
-    formData.positionLevel = Number(formData.positionLevel);
-  }
-
-  // 确保 deptId 是数字类型
-  if (formData.deptId !== undefined) {
-    formData.deptId = Number(formData.deptId);
-  }
-
-  uni.showLoading({ title: '提交中...' });
-
-
-  const id = editingpositionId.value; // 使用存储的positionId
-
-  if (id) {
-    // 更新
-    AioveuPositionAPI.update(id, formData)
-      .then(() => {
-        uni.showToast({
-          title: "修改成功",
-          icon: "success"
-        });
-        handleCloseDialog();
-        handleResetQuery();
-      });
-  } else {
-    // 新增
-    AioveuPositionAPI.add(formData)
-      .then(() => {
-        uni.showToast({
-          title: "新增成功",
-          icon: "success"
-        });
-        handleCloseDialog();
-        handleResetQuery();
-      })
-      .finally(() => uni.hideLoading());
-  }
+  console.log('跳转到:', url);
+  uni.navigateTo({ url });
 };
 
 // 删除岗位
-const handleDelete = (positionId?: number) => {
-  const ids = positionId ? [positionId] : removeIds.value;
+const handleDelete = (id?: number) => {
+  const ids = id ? [id] : removeIds.value;
 
   if (ids.length === 0) {
     uni.showToast({
@@ -379,6 +363,7 @@ const handleDelete = (positionId?: number) => {
     content: '确认删除选中的岗位吗？',
     success: (res) => {
       if (res.confirm) {
+        uni.showLoading({ title: '删除中...' });
         AioveuPositionAPI.deleteByIds(ids.join(","))
           .then(() => {
             uni.showToast({
@@ -386,14 +371,78 @@ const handleDelete = (positionId?: number) => {
               icon: "success"
             });
             handleResetQuery();
-          });
+          })
+          .catch(error => {
+            console.error('删除失败:', error);
+            uni.showToast({
+              title: "删除失败",
+              icon: "none"
+            });
+          })
+          .finally(() => uni.hideLoading());
       }
     }
   });
 };
 
+// 获取职级标签
+const getLevelLabel = (level: number) => {
+  const item = positionLevelOptions.value.find(i => Number(i.value) === level);
+  return item ? item.label : '未知';
+};
+
+// 加载岗位选项
+const loadPositionOptions = () => {
+  AioveuPositionAPI.getAllPositionOptions()
+    .then(response => {
+      if (Array.isArray(response)) {
+        positionOptions.value = response.map(pos => ({
+          positionId: Number(pos.positionId),
+          positionName: pos.positionName
+        }));
+      }
+    })
+    .catch(error => {
+      console.error('加载岗位选项失败:', error);
+      uni.showToast({
+        title: '加载岗位列表失败',
+        icon: 'none'
+      });
+    });
+};
+
+// 加载部门选项
+const loadDeptOptions = () => {
+  AioveuDepartmentAPI.getAllDepartmentOptions()
+    .then(response => {
+      if (Array.isArray(response)) {
+        deptOptions.value = response.map(dept => ({
+          deptId: Number(dept.deptId),
+          deptName: dept.deptName
+        }));
+      }
+    })
+    .catch(error => {
+      console.error('加载部门选项失败:', error);
+      uni.showToast({
+        title: '加载部门列表失败',
+        icon: 'none'
+      });
+    });
+};
+
+// 加载字典选项
+const loadDictOptions = () => {
+  DictAPI.getDictItems('position_level').then(response => {
+    positionLevelOptions.value = response;
+  });
+};
+
 onMounted(() => {
   handleQuery();
+  loadPositionOptions();
+  loadDeptOptions();
+  loadDictOptions();
 });
 </script>
 
@@ -443,13 +492,18 @@ onMounted(() => {
   font-weight: 500;
 }
 
-.filter-input {
+.filter-input, .filter-picker {
   border: 1rpx solid #e2e8f0;
   border-radius: 12rpx;
   padding: 20rpx;
   font-size: 28rpx;
   width: 100%;
   background-color: white;
+}
+
+.picker-view {
+  height: 44rpx;
+  line-height: 44rpx;
 }
 
 .filter-buttons {
@@ -498,11 +552,6 @@ onMounted(() => {
 
   &.add {
     background: #2dce89;
-    color: white;
-  }
-
-  &.edit {
-    background: #5e72e4;
     color: white;
   }
 
@@ -564,12 +613,6 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 24rpx;
 
-  .position-name {
-    font-size: 36rpx;
-    font-weight: 700;
-    color: #1a1a1a;
-  }
-
   .position-id {
     font-size: 28rpx;
     color: #5e72e4;
@@ -577,13 +620,19 @@ onMounted(() => {
     padding: 8rpx 20rpx;
     border-radius: 30rpx;
   }
+
+  .position-name {
+    font-size: 36rpx;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
 }
 
 .card-content {
   margin-bottom: 24rpx;
 }
 
-.info-item {
+.info-row {
   display: flex;
   margin-bottom: 20rpx;
   font-size: 30rpx;
@@ -601,17 +650,19 @@ onMounted(() => {
 }
 
 .card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding-top: 24rpx;
   border-top: 1rpx solid #f1f1f1;
 
-  .action-btn {
-    flex: 1;
-    margin: 0 8rpx;
-    padding: 16rpx 0;
-    font-size: 26rpx;
+  .action-buttons {
+    display: flex;
+    gap: 24rpx;
+    margin: 0;
+
+    .action-btn {
+      flex: 1;
+      padding: 16rpx 0;
+      font-size: 26rpx;
+    }
   }
 }
 
@@ -640,106 +691,6 @@ onMounted(() => {
   .page-info {
     font-size: 28rpx;
     color: #666;
-  }
-}
-
-/* 弹窗 */
-.dialog-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.dialog-container {
-  background: white;
-  border-radius: 16rpx;
-  width: 90%;
-  max-width: 600rpx;
-  overflow: hidden;
-  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);
-}
-
-.dialog-header {
-  padding: 30rpx;
-  background: #f8f9fa;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1rpx solid #eaeaea;
-
-  .dialog-title {
-    font-size: 36rpx;
-    font-weight: 600;
-    color: #1a1a1a;
-  }
-
-  .dialog-close {
-    font-size: 40rpx;
-    color: #666;
-    cursor: pointer;
-  }
-}
-
-.dialog-body {
-  padding: 30rpx;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.form-item {
-  margin-bottom: 32rpx;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 16rpx;
-  font-size: 30rpx;
-  color: #666;
-  font-weight: 500;
-}
-
-.form-input, .form-textarea {
-  width: 100%;
-  border: 1rpx solid #e2e8f0;
-  border-radius: 12rpx;
-  padding: 24rpx;
-  font-size: 30rpx;
-}
-
-.form-textarea {
-  height: 200rpx;
-}
-
-.dialog-footer {
-  padding: 24rpx 30rpx;
-  background: #f8f9fa;
-  display: flex;
-  justify-content: flex-end;
-  gap: 24rpx;
-  border-top: 1rpx solid #eaeaea;
-
-  .dialog-btn {
-    padding: 20rpx 40rpx;
-    border-radius: 12rpx;
-    font-size: 30rpx;
-    border: none;
-
-    &.cancel {
-      background: #f5f5f5;
-      color: #666;
-    }
-
-    &.confirm {
-      background: #5e72e4;
-      color: white;
-    }
   }
 }
 </style>

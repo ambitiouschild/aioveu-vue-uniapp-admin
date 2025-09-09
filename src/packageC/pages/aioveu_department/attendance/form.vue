@@ -109,7 +109,7 @@ import { onLoad } from '@dcloudio/uni-app';
 import AioveuAttendanceAPI, {
   AioveuAttendanceForm
 } from "@/packageC/api/aioveuAttendance/aioveu-attendance";
-import AioveuEmployeeAPI, { EmployeeOptionVO } from "@/packageC/api/aioveuEmployee/aioveu-employee";
+import AioveuEmployeeAPI,{  EmployeeOptionVO } from "@/packageC/api/aioveuEmployee/aioveu-employee";
 import DictAPI, { DictItemOption } from '@/api/system/dict';
 
 const formTitle = ref('新增考勤');

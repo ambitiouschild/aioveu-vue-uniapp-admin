@@ -5,9 +5,230 @@
     </view>
 
     <scroll-view class="form-body" scroll-y>
-      <!-- 员工姓名 -->
+      <!-- 交易编号 -->
       <view class="form-item">
-        <text class="form-label">员工姓名</text>
+        <text class="form-label">交易编号</text>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="请输入交易编号"
+          v-model="formData.transactionNo"
+        />
+      </view>
+
+      <!-- 客户 -->
+      <view class="form-item">
+        <text class="form-label">客户</text>
+        <picker
+          class="form-picker"
+          mode="selector"
+          :range="customerOptions"
+          range-key="customerName"
+          :value="customerIndex"
+          @change="onCustomerChange"
+        >
+          <view class="picker-view">
+            {{ customerIndex >= 0 ? customerOptions[customerIndex].customerName : '请选择客户' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 联系人 -->
+      <view class="form-item">
+        <text class="form-label">联系人</text>
+        <picker
+          class="form-picker"
+          mode="selector"
+          :range="contactOptions"
+          range-key="contactName"
+          :value="contactIndex"
+          @change="onContactChange"
+        >
+          <view class="picker-view">
+            {{ contactIndex >= 0 ? contactOptions[contactIndex].contactName : '请选择联系人' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 交易日期 -->
+      <view class="form-item">
+        <text class="form-label">交易日期</text>
+        <picker
+          class="form-picker"
+          mode="date"
+          :value="formData.transactionDate"
+          @change="onTransactionDateChange"
+        >
+          <view class="picker-view">
+            {{ formData.transactionDate || '请选择交易日期' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 交易金额 -->
+      <view class="form-item">
+        <text class="form-label">交易金额</text>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="请输入交易金额"
+          v-model="formData.amount"
+        />
+      </view>
+
+      <!-- 货币代码 -->
+      <view class="form-item">
+        <text class="form-label">货币代码</text>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="请输入货币代码"
+          v-model="formData.currency"
+        />
+      </view>
+
+      <!-- 支付方式 -->
+      <view class="form-item">
+        <text class="form-label">支付方式</text>
+        <picker
+          class="form-picker"
+          mode="selector"
+          :range="paymentMethodOptions"
+          range-key="label"
+          :value="paymentMethodIndex"
+          @change="onPaymentMethodChange"
+        >
+          <view class="picker-view">
+            {{ paymentMethodIndex >= 0 ? paymentMethodOptions[paymentMethodIndex].label : '请选择支付方式' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 支付状态 -->
+      <view class="form-item">
+        <text class="form-label">支付状态</text>
+        <picker
+          class="form-picker"
+          mode="selector"
+          :range="paymentStatusOptions"
+          range-key="label"
+          :value="paymentStatusIndex"
+          @change="onPaymentStatusChange"
+        >
+          <view class="picker-view">
+            {{ paymentStatusIndex >= 0 ? paymentStatusOptions[paymentStatusIndex].label : '请选择支付状态' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 交易类型 -->
+      <view class="form-item">
+        <text class="form-label">交易类型</text>
+        <picker
+          class="form-picker"
+          mode="selector"
+          :range="transactionTypeOptions"
+          range-key="label"
+          :value="transactionTypeIndex"
+          @change="onTransactionTypeChange"
+        >
+          <view class="picker-view">
+            {{ transactionTypeIndex >= 0 ? transactionTypeOptions[transactionTypeIndex].label : '请选择交易类型' }}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 发票号码 -->
+      <view class="form-item">
+        <text class="form-label">发票号码</text>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="请输入发票号码"
+          v-model="formData.invoiceNo"
+        />
+      </view>
+
+      <!-- 产品ID -->
+      <view class="form-item">
+        <text class="form-label">产品ID</text>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="请输入产品ID"
+          v-model="formData.productId"
+        />
+      </view>
+
+      <!-- 数量 -->
+      <view class="form-item">
+        <text class="form-label">数量</text>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="请输入数量"
+          v-model="formData.quantity"
+        />
+      </view>
+
+      <!-- 单价 -->
+      <view class="form-item">
+        <text class="form-label">单价</text>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="请输入单价"
+          v-model="formData.unitPrice"
+        />
+      </view>
+
+      <!-- 折扣率 -->
+      <view class="form-item">
+        <text class="form-label">折扣率</text>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="请输入折扣率"
+          v-model="formData.discount"
+        />
+      </view>
+
+      <!-- 税率 -->
+      <view class="form-item">
+        <text class="form-label">税率</text>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="请输入税率"
+          v-model="formData.taxRate"
+        />
+      </view>
+
+      <!-- 税额 -->
+      <view class="form-item">
+        <text class="form-label">税额</text>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="请输入税额"
+          v-model="formData.taxAmount"
+        />
+      </view>
+
+      <!-- 总金额 -->
+      <view class="form-item">
+        <text class="form-label">总金额</text>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="请输入总金额"
+          v-model="formData.totalAmount"
+        />
+      </view>
+
+      <!-- 负责人 -->
+      <view class="form-item">
+        <text class="form-label">负责人</text>
         <picker
           class="form-picker"
           mode="selector"
@@ -17,82 +238,36 @@
           @change="onEmployeeChange"
         >
           <view class="picker-view">
-            {{ employeeIndex >= 0 ? employeeOptions[employeeIndex].employeeName : '请选择员工' }}
+            {{ employeeIndex >= 0 ? employeeOptions[employeeIndex].employeeName : '请选择负责人' }}
           </view>
         </picker>
       </view>
 
-      <!-- 日期 -->
+      <!-- 交易状态 -->
       <view class="form-item">
-        <text class="form-label">日期</text>
-        <picker
-          class="form-picker"
-          mode="date"
-          :value="formData.date"
-          @change="onDateChange"
-        >
-          <view class="picker-view">
-            {{ formData.date || '请选择日期' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 上班打卡时间 -->
-      <view class="form-item">
-        <text class="form-label">上班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkinTime"
-          @change="onCheckinTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkinTime || '请选择上班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 下班打卡时间 -->
-      <view class="form-item">
-        <text class="form-label">下班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkoutTime"
-          @change="onCheckoutTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkoutTime || '请选择下班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 工作时长 -->
-      <view class="form-item">
-        <text class="form-label">工作时长(小时)</text>
-        <input
-          type="number"
-          class="form-input"
-          placeholder="请输入工作时长"
-          v-model="formData.workHours"
-        />
-      </view>
-
-      <!-- 考勤状态 -->
-      <view class="form-item">
-        <text class="form-label">考勤状态</text>
+        <text class="form-label">交易状态</text>
         <picker
           class="form-picker"
           mode="selector"
-          :range="attendanceStatusOptions"
+          :range="transactionStatusOptions"
           range-key="label"
-          :value="statusIndex"
-          @change="onStatusChange"
+          :value="transactionStatusIndex"
+          @change="onTransactionStatusChange"
         >
           <view class="picker-view">
-            {{ statusIndex >= 0 ? attendanceStatusOptions[statusIndex].label : '请选择状态' }}
+            {{ transactionStatusIndex >= 0 ? transactionStatusOptions[transactionStatusIndex].label : '请选择交易状态' }}
           </view>
         </picker>
+      </view>
+
+      <!-- 备注 -->
+      <view class="form-item">
+        <text class="form-label">备注</text>
+        <textarea
+          class="form-textarea"
+          placeholder="请输入备注"
+          v-model="formData.notes"
+        />
       </view>
     </scroll-view>
 
@@ -106,190 +281,371 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import AioveuAttendanceAPI, {
-  AioveuAttendanceForm
-} from "@/packageC/api/aioveuAttendance/aioveu-attendance";
-import AioveuEmployeeAPI, { EmployeeOptionVO } from "@/packageC/api/aioveuEmployee/aioveu-employee";
+import AioveuTransactionAPI, {
+  AioveuTransactionForm
+} from "@/packageE/api/aioveuTransaction/aioveu-transaction";
+import AioveuCustomerAPI, { CustomerOptionVO } from "@/packageE/api/aioveuCustomer/aioveu-customer";
+import AioveuContactAPI, { ContactOptionVO } from "@/packageE/api/aioveuContact/aioveu-contact";
+import AioveuEmployeeAPI, { EmployeeOptionVO } from "@/packageE/api/aioveuEmployee/aioveu-employee";
 import DictAPI, { DictItemOption } from '@/api/system/dict';
 
-const formTitle = ref('新增考勤');
-const attendanceId = ref<number | undefined>(undefined);
+const formTitle = ref('新增交易记录');
+const transactionId = ref<number | undefined>(undefined);
 const loading = ref(false);
 
-const formData = reactive<AioveuAttendanceForm>({
-  employeeName: '',
-  // date: '',
-  // checkinTime: '',
-  // checkoutTime: '',
-  workHours: undefined,
-  status: undefined
-});
+// 在组件中添加一个变量存储当前编辑的ID
+const editingTransactionId = ref<number | undefined>(undefined);
 
+const formData = reactive<AioveuTransactionForm>({});
+
+const customerOptions = ref<CustomerOptionVO[]>([]);
+const contactOptions = ref<ContactOptionVO[]>([]);
 const employeeOptions = ref<EmployeeOptionVO[]>([]);
-const attendanceStatusOptions = ref<DictItemOption[]>([]);
+const paymentMethodOptions = ref<DictItemOption[]>([]);
+const paymentStatusOptions = ref<DictItemOption[]>([]);
+const transactionTypeOptions = ref<DictItemOption[]>([]);
+const transactionStatusOptions = ref<DictItemOption[]>([]);
 
+const customerIndex = ref(-1);
+const contactIndex = ref(-1);
 const employeeIndex = ref(-1);
-const statusIndex = ref(-1);
+const paymentMethodIndex = ref(-1);
+const paymentStatusIndex = ref(-1);
+const transactionTypeIndex = ref(-1);
+const transactionStatusIndex = ref(-1);
 
 onLoad((options: any) => {
   console.log('页面参数:', options);
 
-  if (options.attendanceId) {
-    attendanceId.value = Number(options.attendanceId);
-    formTitle.value = '编辑考勤';
-    loadAttendanceData();
+  if (options.id) {
+    transactionId.value = Number(options.id);
+    formTitle.value = '编辑交易记录';
+    loadTransactionData();
   } else {
-    formTitle.value = '新增考勤';
+    formTitle.value = '新增交易记录';
   }
 
-  loadEmployees();
-  loadAttendanceStatus();
+  // 存储编辑ID
+  editingTransactionId.value = transactionId.value;
+
+  // 加载选项数据
+  loadCustomerOptions();
+  loadContactOptions();
+  loadEmployeeOptions();
+  loadDictOptions();
 });
 
-// 加载考勤数据
-const loadAttendanceData = () => {
-  if (!attendanceId.value) return;
+// 加载交易记录数据
+const loadTransactionData = async () => {
+  if (!transactionId.value) return;
 
-  loading.value = true;
-  AioveuAttendanceAPI.getFormData(attendanceId.value)
-    .then((data) => {
-      Object.assign(formData, data);
+  try {
+    loading.value = true;
+    const data = await AioveuTransactionAPI.getFormData(transactionId.value);
+    Object.assign(formData, data);
 
-      // 设置员工索引
-      if (formData.employeeName) {
-        const index = employeeOptions.value.findIndex(
-          emp => emp.employeeName === formData.employeeName
-        );
-        employeeIndex.value = index;
-      }
+    // 设置选项索引
+    if (formData.customerName) {
+      const custIdx = customerOptions.value.findIndex(cust => cust.customerName === formData.customerName);
+      customerIndex.value = custIdx;
+    }
 
-      // 设置状态索引
-      if (formData.status !== undefined) {
-        const index = attendanceStatusOptions.value.findIndex(
-          item => item.value === formData.status?.toString()
-        );
-        statusIndex.value = index;
-      }
-    })
-    .finally(() => {
-      loading.value = false;
+    if (formData.contactName) {
+      const contactIdx = contactOptions.value.findIndex(contact => contact.contactName === formData.contactName);
+      contactIndex.value = contactIdx;
+    }
+
+    if (formData.salesRepName) {
+      const empIdx = employeeOptions.value.findIndex(emp => emp.employeeName === formData.salesRepName);
+      employeeIndex.value = empIdx;
+    }
+
+    if (formData.paymentMethod !== undefined) {
+      const methodIdx = paymentMethodOptions.value.findIndex(opt => Number(opt.value) === formData.paymentMethod);
+      paymentMethodIndex.value = methodIdx;
+    }
+
+    if (formData.paymentStatus !== undefined) {
+      const statusIdx = paymentStatusOptions.value.findIndex(opt => Number(opt.value) === formData.paymentStatus);
+      paymentStatusIndex.value = statusIdx;
+    }
+
+    if (formData.transactionType !== undefined) {
+      const typeIdx = transactionTypeOptions.value.findIndex(opt => Number(opt.value) === formData.transactionType);
+      transactionTypeIndex.value = typeIdx;
+    }
+
+    if (formData.transactionStatus !== undefined) {
+      const statusIdx = transactionStatusOptions.value.findIndex(opt => Number(opt.value) === formData.transactionStatus);
+      transactionStatusIndex.value = statusIdx;
+    }
+  } catch (error) {
+    console.error('加载交易记录数据失败:', error);
+    uni.showToast({
+      title: '加载数据失败',
+      icon: 'none'
     });
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 加载客户选项
+const loadCustomerOptions = async () => {
+  try {
+    const response = await AioveuCustomerAPI.getAllCustomerOptions();
+    if (Array.isArray(response)) {
+      customerOptions.value = response.map(cust => ({
+        customerId: Number(cust.customerId),
+        customerName: cust.customerName
+      }));
+    }
+  } catch (error) {
+    console.error('加载客户列表失败:', error);
+    uni.showToast({
+      title: '加载客户列表失败',
+      icon: 'none'
+    });
+  }
+};
+
+// 加载联系人选项
+const loadContactOptions = async () => {
+  try {
+    const response = await AioveuContactAPI.getAllContactOptions();
+    if (Array.isArray(response)) {
+      contactOptions.value = response.map(contact => ({
+        contactId: Number(contact.contactId),
+        contactName: contact.contactName
+      }));
+    }
+  } catch (error) {
+    console.error('加载联系人列表失败:', error);
+    uni.showToast({
+      title: '加载联系人列表失败',
+      icon: 'none'
+    });
+  }
 };
 
 // 加载员工选项
-const loadEmployees = () => {
-  AioveuEmployeeAPI.getAllEmployeeOptions()
-    .then(response => {
-      if (Array.isArray(response)) {
-        employeeOptions.value = response.map(emp => ({
-          employeeId: Number(emp.employeeId),
-          employeeName: emp.employeeName
-        }));
-      }
+const loadEmployeeOptions = async () => {
+  try {
+    const response = await AioveuEmployeeAPI.getAllEmployeeOptions();
+    if (Array.isArray(response)) {
+      employeeOptions.value = response.map(emp => ({
+        employeeId: Number(emp.employeeId),
+        employeeName: emp.employeeName
+      }));
+    }
+  } catch (error) {
+    console.error('加载员工列表失败:', error);
+    uni.showToast({
+      title: '加载员工列表失败',
+      icon: 'none'
     });
+  }
 };
 
-// 加载考勤状态选项
-const loadAttendanceStatus = () => {
-  DictAPI.getDictItems('attendance_status')
-    .then(response => {
-      attendanceStatusOptions.value = response;
+// 加载字典选项
+const loadDictOptions = async () => {
+  try {
+    const paymentMethodResp = await DictAPI.getDictItems('transaction_payment_method');
+    paymentMethodOptions.value = paymentMethodResp;
+
+    const paymentStatusResp = await DictAPI.getDictItems('transaction_payment_status');
+    paymentStatusOptions.value = paymentStatusResp;
+
+    const transactionTypeResp = await DictAPI.getDictItems('transaction_type');
+    transactionTypeOptions.value = transactionTypeResp;
+
+    const transactionStatusResp = await DictAPI.getDictItems('transaction_status');
+    transactionStatusOptions.value = transactionStatusResp;
+  } catch (error) {
+    console.error('加载字典选项失败:', error);
+    uni.showToast({
+      title: '加载选项失败',
+      icon: 'none'
     });
+  }
 };
 
-// 员工选择变化
+// 客户选择变化
+const onCustomerChange = (e: any) => {
+  const index = e.detail.value;
+  customerIndex.value = index;
+  if (customerOptions.value[index]) {
+    formData.customerName = customerOptions.value[index].customerName;
+  }
+};
+
+// 联系人选择变化
+const onContactChange = (e: any) => {
+  const index = e.detail.value;
+  contactIndex.value = index;
+  if (contactOptions.value[index]) {
+    formData.contactName = contactOptions.value[index].contactName;
+  }
+};
+
+// 支付方式选择变化
+const onPaymentMethodChange = (e: any) => {
+  const index = e.detail.value;
+  paymentMethodIndex.value = index;
+  if (paymentMethodOptions.value[index]) {
+    formData.paymentMethod = Number(paymentMethodOptions.value[index].value);
+  }
+};
+
+// 支付状态选择变化
+const onPaymentStatusChange = (e: any) => {
+  const index = e.detail.value;
+  paymentStatusIndex.value = index;
+  if (paymentStatusOptions.value[index]) {
+    formData.paymentStatus = Number(paymentStatusOptions.value[index].value);
+  }
+};
+
+// 交易类型选择变化
+const onTransactionTypeChange = (e: any) => {
+  const index = e.detail.value;
+  transactionTypeIndex.value = index;
+  if (transactionTypeOptions.value[index]) {
+    formData.transactionType = Number(transactionTypeOptions.value[index].value);
+  }
+};
+
+// 交易状态选择变化
+const onTransactionStatusChange = (e: any) => {
+  const index = e.detail.value;
+  transactionStatusIndex.value = index;
+  if (transactionStatusOptions.value[index]) {
+    formData.transactionStatus = Number(transactionStatusOptions.value[index].value);
+  }
+};
+
+// 负责人选择变化
 const onEmployeeChange = (e: any) => {
   const index = e.detail.value;
   employeeIndex.value = index;
   if (employeeOptions.value[index]) {
-    formData.employeeName = employeeOptions.value[index].employeeName;
+    formData.salesRepName = employeeOptions.value[index].employeeName;
   }
 };
 
-// 日期选择变化
-const onDateChange = (e: any) => {
-  formData.date = e.detail.value;
-};
-
-// 上班时间选择变化
-const onCheckinTimeChange = (e: any) => {
-  formData.checkinTime = e.detail.value;
-};
-
-// 下班时间选择变化
-const onCheckoutTimeChange = (e: any) => {
-  formData.checkoutTime = e.detail.value;
-};
-
-// 状态选择变化
-const onStatusChange = (e: any) => {
-  const index = e.detail.value;
-  statusIndex.value = index;
-  if (attendanceStatusOptions.value[index]) {
-    formData.status = Number(attendanceStatusOptions.value[index].value);
-  }
+// 交易日期选择变化
+const onTransactionDateChange = (e: any) => {
+  formData.transactionDate = e.detail.value;
 };
 
 // 提交表单
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!validateForm()) return;
 
-  uni.showLoading({ title: '提交中...' });
+  try {
+    uni.showLoading({ title: '提交中...' });
 
-  if (attendanceId.value) {
-    // 更新
-    AioveuAttendanceAPI.update(attendanceId.value, formData)
-      .then(() => {
-        uni.showToast({
-          title: "修改成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
-  } else {
-    // 新增
-    AioveuAttendanceAPI.add(formData)
-      .then(() => {
-        uni.showToast({
-          title: "新增成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
+    // 使用存储的ID
+    const id = editingTransactionId.value;
+
+    if (id) {
+      // 更新交易记录
+      await AioveuTransactionAPI.update(id, formData);
+      uni.showToast({
+        title: "修改成功",
+        icon: "success"
+      });
+    } else {
+      // 新增交易记录
+      await AioveuTransactionAPI.add(formData);
+      uni.showToast({
+        title: "新增成功",
+        icon: "success"
+      });
+    }
+
+    // 返回列表页
+    uni.navigateBack();
+  } catch (error) {
+    console.error('提交表单失败:', error);
+    uni.showToast({
+      title: "提交失败",
+      icon: "none"
+    });
+  } finally {
+    uni.hideLoading();
   }
 };
 
 // 表单验证
 const validateForm = () => {
-  if (!formData.employeeName) {
+  if (!formData.transactionNo) {
     uni.showToast({
-      title: "请选择员工",
+      title: "请输入交易编号",
       icon: "none"
     });
     return false;
   }
 
-  if (!formData.date) {
+  if (!formData.customerName) {
     uni.showToast({
-      title: "请选择日期",
+      title: "请选择客户",
       icon: "none"
     });
     return false;
   }
 
-  if (!formData.workHours) {
+  if (!formData.contactName) {
     uni.showToast({
-      title: "请输入工作时长",
+      title: "请选择联系人",
       icon: "none"
     });
     return false;
   }
 
-  if (formData.status === undefined) {
+  if (!formData.transactionDate) {
     uni.showToast({
-      title: "请选择考勤状态",
+      title: "请选择交易日期",
+      icon: "none"
+    });
+    return false;
+  }
+
+  if (formData.amount === undefined) {
+    uni.showToast({
+      title: "请输入交易金额",
+      icon: "none"
+    });
+    return false;
+  }
+
+  if (formData.paymentMethod === undefined) {
+    uni.showToast({
+      title: "请选择支付方式",
+      icon: "none"
+    });
+    return false;
+  }
+
+  if (formData.paymentStatus === undefined) {
+    uni.showToast({
+      title: "请选择支付状态",
+      icon: "none"
+    });
+    return false;
+  }
+
+  if (formData.transactionType === undefined) {
+    uni.showToast({
+      title: "请选择交易类型",
+      icon: "none"
+    });
+    return false;
+  }
+
+  if (formData.transactionStatus === undefined) {
+    uni.showToast({
+      title: "请选择交易状态",
       icon: "none"
     });
     return false;
@@ -348,12 +704,17 @@ const handleCancel = () => {
   font-weight: 500;
 }
 
-.form-input, .form-picker {
-  width: 100%;
+.form-input, .form-picker, .form-textarea {
   border: 1rpx solid #e2e8f0;
   border-radius: 12rpx;
   padding: 24rpx;
   font-size: 30rpx;
+  width: 100%;
+  background-color: white;
+}
+
+.form-textarea {
+  height: 200rpx;
 }
 
 .picker-view {
@@ -361,11 +722,12 @@ const handleCancel = () => {
   line-height: 44rpx;
 }
 
+/* 表单底部按钮容器 */
 .form-footer {
-  padding: 24rpx 30rpx;
-  background: #f8f9fa;
   display: flex;
   justify-content: space-between;
+  padding: 24rpx 30rpx;
+  background: #f8f9fa;
   gap: 24rpx;
   margin-top: 24rpx;
   border-top: 1rpx solid #eaeaea;
@@ -376,6 +738,9 @@ const handleCancel = () => {
     border-radius: 12rpx;
     font-size: 30rpx;
     border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &.cancel {
       background: #f5f5f5;

@@ -5,94 +5,53 @@
     </view>
 
     <scroll-view class="form-body" scroll-y>
-      <!-- 员工姓名 -->
+      <!-- 分类名称 -->
       <view class="form-item">
-        <text class="form-label">员工姓名</text>
-        <picker
-          class="form-picker"
-          mode="selector"
-          :range="employeeOptions"
-          range-key="employeeName"
-          :value="employeeIndex"
-          @change="onEmployeeChange"
-        >
-          <view class="picker-view">
-            {{ employeeIndex >= 0 ? employeeOptions[employeeIndex].employeeName : '请选择员工' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 日期 -->
-      <view class="form-item">
-        <text class="form-label">日期</text>
-        <picker
-          class="form-picker"
-          mode="date"
-          :value="formData.date"
-          @change="onDateChange"
-        >
-          <view class="picker-view">
-            {{ formData.date || '请选择日期' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 上班打卡时间 -->
-      <view class="form-item">
-        <text class="form-label">上班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkinTime"
-          @change="onCheckinTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkinTime || '请选择上班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 下班打卡时间 -->
-      <view class="form-item">
-        <text class="form-label">下班打卡时间</text>
-        <picker
-          class="form-picker"
-          mode="time"
-          :value="formData.checkoutTime"
-          @change="onCheckoutTimeChange"
-        >
-          <view class="picker-view">
-            {{ formData.checkoutTime || '请选择下班时间' }}
-          </view>
-        </picker>
-      </view>
-
-      <!-- 工作时长 -->
-      <view class="form-item">
-        <text class="form-label">工作时长(小时)</text>
+        <text class="form-label">分类名称</text>
         <input
-          type="number"
+          type="text"
           class="form-input"
-          placeholder="请输入工作时长"
-          v-model="formData.workHours"
+          placeholder="请输入分类名称"
+          v-model="formData.name"
         />
       </view>
 
-      <!-- 考勤状态 -->
+      <!-- 父分类 -->
       <view class="form-item">
-        <text class="form-label">考勤状态</text>
+        <text class="form-label">父分类</text>
         <picker
           class="form-picker"
           mode="selector"
-          :range="attendanceStatusOptions"
-          range-key="label"
-          :value="statusIndex"
-          @change="onStatusChange"
+          :range="parentCategoryOptions"
+          range-key="categoryName"
+          :value="parentCategoryIndex"
+          @change="onParentCategoryChange"
         >
           <view class="picker-view">
-            {{ statusIndex >= 0 ? attendanceStatusOptions[statusIndex].label : '请选择状态' }}
+            {{ parentCategoryIndex >= 0 ? parentCategoryOptions[parentCategoryIndex].categoryName : '请选择父分类' }}
           </view>
         </picker>
+      </view>
+
+      <!-- 分类层级 -->
+      <view class="form-item">
+        <text class="form-label">分类层级</text>
+        <input
+          type="number"
+          class="form-input"
+          placeholder="请输入分类层级"
+          v-model="formData.level"
+        />
+      </view>
+
+      <!-- 分类描述 -->
+      <view class="form-item">
+        <text class="form-label">分类描述</text>
+        <textarea
+          class="form-textarea"
+          placeholder="请输入分类描述"
+          v-model="formData.description"
+        />
       </view>
     </scroll-view>
 
@@ -106,190 +65,144 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import AioveuAttendanceAPI, {
-  AioveuAttendanceForm
-} from "@/packageC/api/aioveuAttendance/aioveu-attendance";
-import AioveuEmployeeAPI, { EmployeeOptionVO } from "@/packageC/api/aioveuEmployee/aioveu-employee";
-import DictAPI, { DictItemOption } from '@/api/system/dict';
+import AioveuCategoryAPI, {
+  AioveuCategoryForm,
+  CategoryOptionVO
+} from "@/packageD/api/aioveuCategory/aioveu-category";
 
-const formTitle = ref('新增考勤');
-const attendanceId = ref<number | undefined>(undefined);
+const formTitle = ref('新增分类');
+const categoryId = ref<number | undefined>(undefined);
 const loading = ref(false);
 
-const formData = reactive<AioveuAttendanceForm>({
-  employeeName: '',
-  // date: '',
-  // checkinTime: '',
-  // checkoutTime: '',
-  workHours: undefined,
-  status: undefined
+const formData = reactive<AioveuCategoryForm>({
+  name: '',
+  parentCategoryName: '',
+  level: undefined,
+  description: ''
 });
 
-const employeeOptions = ref<EmployeeOptionVO[]>([]);
-const attendanceStatusOptions = ref<DictItemOption[]>([]);
-
-const employeeIndex = ref(-1);
-const statusIndex = ref(-1);
+const parentCategoryOptions = ref<CategoryOptionVO[]>([]);
+const parentCategoryIndex = ref(-1);
 
 onLoad((options: any) => {
   console.log('页面参数:', options);
 
-  if (options.attendanceId) {
-    attendanceId.value = Number(options.attendanceId);
-    formTitle.value = '编辑考勤';
-    loadAttendanceData();
+  if (options.id) {
+    categoryId.value = Number(options.id);
+    formTitle.value = '编辑分类';
+    loadCategoryData();
   } else {
-    formTitle.value = '新增考勤';
+    formTitle.value = '新增分类';
   }
 
-  loadEmployees();
-  loadAttendanceStatus();
+  // 加载父分类选项
+  loadParentCategoryOptions();
 });
 
-// 加载考勤数据
-const loadAttendanceData = () => {
-  if (!attendanceId.value) return;
+// 加载分类数据
+const loadCategoryData = async () => {
+  if (!categoryId.value) return;
 
-  loading.value = true;
-  AioveuAttendanceAPI.getFormData(attendanceId.value)
-    .then((data) => {
-      Object.assign(formData, data);
+  try {
+    loading.value = true;
+    const data = await AioveuCategoryAPI.getFormData(categoryId.value);
+    Object.assign(formData, data);
 
-      // 设置员工索引
-      if (formData.employeeName) {
-        const index = employeeOptions.value.findIndex(
-          emp => emp.employeeName === formData.employeeName
-        );
-        employeeIndex.value = index;
-      }
-
-      // 设置状态索引
-      if (formData.status !== undefined) {
-        const index = attendanceStatusOptions.value.findIndex(
-          item => item.value === formData.status?.toString()
-        );
-        statusIndex.value = index;
-      }
-    })
-    .finally(() => {
-      loading.value = false;
+    // 设置父分类索引
+    if (formData.parentCategoryName) {
+      const index = parentCategoryOptions.value.findIndex(
+        cat => cat.categoryName === formData.parentCategoryName
+      );
+      parentCategoryIndex.value = index;
+    }
+  } catch (error) {
+    console.error('加载分类数据失败:', error);
+    uni.showToast({
+      title: '加载数据失败',
+      icon: 'none'
     });
-};
-
-// 加载员工选项
-const loadEmployees = () => {
-  AioveuEmployeeAPI.getAllEmployeeOptions()
-    .then(response => {
-      if (Array.isArray(response)) {
-        employeeOptions.value = response.map(emp => ({
-          employeeId: Number(emp.employeeId),
-          employeeName: emp.employeeName
-        }));
-      }
-    });
-};
-
-// 加载考勤状态选项
-const loadAttendanceStatus = () => {
-  DictAPI.getDictItems('attendance_status')
-    .then(response => {
-      attendanceStatusOptions.value = response;
-    });
-};
-
-// 员工选择变化
-const onEmployeeChange = (e: any) => {
-  const index = e.detail.value;
-  employeeIndex.value = index;
-  if (employeeOptions.value[index]) {
-    formData.employeeName = employeeOptions.value[index].employeeName;
+  } finally {
+    loading.value = false;
   }
 };
 
-// 日期选择变化
-const onDateChange = (e: any) => {
-  formData.date = e.detail.value;
+// 加载父分类选项
+const loadParentCategoryOptions = async () => {
+  try {
+    const response = await AioveuCategoryAPI.getAllCategoryOptions();
+    if (Array.isArray(response)) {
+      parentCategoryOptions.value = response.map(cat => ({
+        categoryId: Number(cat.categoryId),
+        categoryName: cat.categoryName
+      }));
+    }
+  } catch (error) {
+    console.error('加载父分类列表失败:', error);
+    uni.showToast({
+      title: '加载父分类列表失败',
+      icon: 'none'
+    });
+  }
 };
 
-// 上班时间选择变化
-const onCheckinTimeChange = (e: any) => {
-  formData.checkinTime = e.detail.value;
-};
-
-// 下班时间选择变化
-const onCheckoutTimeChange = (e: any) => {
-  formData.checkoutTime = e.detail.value;
-};
-
-// 状态选择变化
-const onStatusChange = (e: any) => {
+// 父分类选择变化
+const onParentCategoryChange = (e: any) => {
   const index = e.detail.value;
-  statusIndex.value = index;
-  if (attendanceStatusOptions.value[index]) {
-    formData.status = Number(attendanceStatusOptions.value[index].value);
+  parentCategoryIndex.value = index;
+  if (parentCategoryOptions.value[index]) {
+    formData.parentCategoryName = parentCategoryOptions.value[index].categoryName;
   }
 };
 
 // 提交表单
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!validateForm()) return;
 
-  uni.showLoading({ title: '提交中...' });
+  try {
+    uni.showLoading({ title: '提交中...' });
 
-  if (attendanceId.value) {
-    // 更新
-    AioveuAttendanceAPI.update(attendanceId.value, formData)
-      .then(() => {
-        uni.showToast({
-          title: "修改成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
-  } else {
-    // 新增
-    AioveuAttendanceAPI.add(formData)
-      .then(() => {
-        uni.showToast({
-          title: "新增成功",
-          icon: "success"
-        });
-        uni.navigateBack();
-      })
-      .finally(() => uni.hideLoading());
+    if (categoryId.value) {
+      // 更新分类
+      await AioveuCategoryAPI.update(categoryId.value, formData);
+      uni.showToast({
+        title: "修改成功",
+        icon: "success"
+      });
+    } else {
+      // 新增分类
+      await AioveuCategoryAPI.add(formData);
+      uni.showToast({
+        title: "新增成功",
+        icon: "success"
+      });
+    }
+
+    // 返回列表页
+    uni.navigateBack();
+  } catch (error) {
+    console.error('提交表单失败:', error);
+    uni.showToast({
+      title: "提交失败",
+      icon: "none"
+    });
+  } finally {
+    uni.hideLoading();
   }
 };
 
 // 表单验证
 const validateForm = () => {
-  if (!formData.employeeName) {
+  if (!formData.name) {
     uni.showToast({
-      title: "请选择员工",
+      title: "请输入分类名称",
       icon: "none"
     });
     return false;
   }
 
-  if (!formData.date) {
+  if (!formData.level) {
     uni.showToast({
-      title: "请选择日期",
-      icon: "none"
-    });
-    return false;
-  }
-
-  if (!formData.workHours) {
-    uni.showToast({
-      title: "请输入工作时长",
-      icon: "none"
-    });
-    return false;
-  }
-
-  if (formData.status === undefined) {
-    uni.showToast({
-      title: "请选择考勤状态",
+      title: "请输入分类层级",
       icon: "none"
     });
     return false;
@@ -348,7 +261,7 @@ const handleCancel = () => {
   font-weight: 500;
 }
 
-.form-input, .form-picker {
+.form-input, .form-picker, .form-textarea {
   width: 100%;
   border: 1rpx solid #e2e8f0;
   border-radius: 12rpx;
@@ -356,16 +269,21 @@ const handleCancel = () => {
   font-size: 30rpx;
 }
 
+.form-textarea {
+  height: 200rpx;
+}
+
 .picker-view {
   height: 44rpx;
   line-height: 44rpx;
 }
 
+/* 表单底部按钮容器 */
 .form-footer {
-  padding: 24rpx 30rpx;
-  background: #f8f9fa;
   display: flex;
   justify-content: space-between;
+  padding: 24rpx 30rpx;
+  background: #f8f9fa;
   gap: 24rpx;
   margin-top: 24rpx;
   border-top: 1rpx solid #eaeaea;
@@ -376,6 +294,9 @@ const handleCancel = () => {
     border-radius: 12rpx;
     font-size: 30rpx;
     border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &.cancel {
       background: #f5f5f5;
