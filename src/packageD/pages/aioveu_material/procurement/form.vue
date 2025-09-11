@@ -273,23 +273,23 @@ const editingProcurementId = ref<number | undefined>(undefined);
 
 // 表单数据
 const formData = reactive<AioveuProcurementForm>({
-  procurementNo: '',
-  // supplierId: '',
-  materialName: '',
-  quantity: 0,
-  unitPrice: 0,
-  totalAmount: 0,
-  // orderDate: '',
-  // expectedDelivery: '',
-  // actualDelivery: '',
-  // receiptDate: '',
-  warehouseName: '',
-  // inboundDate: '',
-  status: undefined,
-  applicantName: '',
-  reviewerName: '',
-  // reviewTime: '',
-  remark: ''
+  // procurementNo: '',
+  // // supplierId: '',
+  // materialName: '',
+  // quantity: 0,
+  // unitPrice: 0,
+  // totalAmount: 0,
+  // // orderDate: '',
+  // // expectedDelivery: '',
+  // // actualDelivery: '',
+  // // receiptDate: '',
+  // warehouseName: '',
+  // // inboundDate: '',
+  // status: undefined,
+  // applicantName: '',
+  // reviewerName: '',
+  // // reviewTime: '',
+  // remark: ''
 });
 
 // 选项
@@ -322,8 +322,23 @@ onLoad((options: any) => {
 // 加载表单数据
 const loadFormData = async (id: number) => {
   try {
+
+    uni.showLoading({ title: '加载中...' });
+
+
     const data = await AioveuProcurementAPI.getFormData(id);
-    Object.assign(formData, data);
+    Object.assign(formData, {
+
+      ...data,
+      // 将后端字符串转换为 Date 对象
+      orderDate: data.orderDate ? new Date(data.orderDate) : new Date(),
+      receiptDate: data.receiptDate ? new Date(data.receiptDate) : new Date(),
+      inboundDate: data.inboundDate ? new Date(data.inboundDate) : new Date(),
+
+      reviewTime: data.reviewTime ? new Date(data.reviewTime) : new Date(),
+
+
+    });
     setSelectedIndexes();
   } catch (error) {
     console.error('加载采购数据失败:', error);
@@ -331,6 +346,8 @@ const loadFormData = async (id: number) => {
       title: '加载数据失败',
       icon: 'none'
     });
+  }finally {
+    uni.hideLoading();
   }
 };
 
@@ -489,7 +506,9 @@ const onReviewTimeChange = (e: any) => {
 
 
 // 时间显示格式化函数
-const formatDateTimeDisplay = (date: Date) => {
+const formatDateTimeDisplay = (date: Date | undefined) => {
+
+  if (!date) return ''; // 处理 undefined 和 null
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
