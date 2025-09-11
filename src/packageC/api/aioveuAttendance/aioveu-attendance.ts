@@ -97,11 +97,11 @@ export interface AioveuAttendanceForm {
     /** 员工姓名 */
     employeeName?: string;
     /** 日期 */
-    date?:  Date;
+    date?:  string;
     /** 上班打卡时间 */
-    checkinTime?:  Date;
+    checkinTime?:  string;
     /** 下班打卡时间 */
-    checkoutTime?:  Date;
+    checkoutTime?:  string;
     /** 工作时长(小时) */
     workHours?:  number;
     /** 考勤状态：0-正常，1-迟到，2-早退，3-缺勤，4-休假 */

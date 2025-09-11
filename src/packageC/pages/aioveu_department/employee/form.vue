@@ -31,11 +31,12 @@
           class="form-picker"
           mode="selector"
           :range="genderOptions"
+          range-key="label"
           :value="genderIndex"
           @change="onGenderChange"
         >
           <view class="picker-view">
-            {{ genderIndex >= 0 ? genderOptions[genderIndex] : '请选择性别' }}
+            {{ genderIndex >= 0 ? genderOptions[genderIndex].label: '请选择性别' }}
           </view>
         </picker>
       </view>
@@ -171,7 +172,7 @@ import   AioveuEmployeeAPI,{
 } from "@/packageC/api/aioveuEmployee/aioveu-employee";
 import AioveuDepartmentAPI, { DeptOptionVO } from "@/packageC/api/aioveuDepartment/aioveu-department";
 import AioveuPositionAPI, { PositionOptionVO } from "@/packageC/api/aioveuPosition/aioveu-position";
-
+import DictAPI, { DictItemOption } from '@/api/system/dict';
 const formTitle = ref('新增员工');
 const employeeId = ref<number | undefined>(undefined);
 const loading = ref(false);
@@ -179,7 +180,6 @@ const loading = ref(false);
 const formData = reactive<AioveuEmployeeForm>({
 });
 
-const genderOptions = ['男', '女'];
 const genderIndex = ref(-1);
 const deptOptions = ref<DeptOptionVO[]>([]);
 const deptIndex = ref(-1);
@@ -187,7 +187,7 @@ const positionOptions = ref<PositionOptionVO[]>([]);
 const positionIndex = ref(-1);
 const statusOptions = ['离职', '在职', '休假', '实习'];
 const statusIndex = ref(-1);
-
+const genderOptions = ref<DictItemOption[]>([]);
 // 在表单页中修改onLoad函数
 onLoad((options: any) => {
   console.log('页面参数:', options);
@@ -221,6 +221,7 @@ onLoad((options: any) => {
   // 加载其他数据
   loadDepartments();
   loadPositions();
+  loadGenderOptions();
 });
 
 // 加载员工数据
@@ -233,8 +234,16 @@ const loadEmployeeData = () => {
       Object.assign(formData, data);
 
       // 设置选择器索引
-      genderIndex.value = formData.gender === 1 ? 0 : 1;
-      statusIndex.value = formData.status || 0;
+      if (formData.gender !== undefined) {
+        // 根据字典值查找对应索引
+        const genderValue = String(formData.gender);
+        const index = genderOptions.value.findIndex(
+          item => item.value === genderValue
+        );
+        if (index !== -1) {
+          genderIndex.value = index;
+        }
+      }
     })
     .finally(() => {
       loading.value = false;
@@ -271,7 +280,9 @@ const loadPositions = () => {
 const onGenderChange = (e: any) => {
   const index = e.detail.value;
   genderIndex.value = index;
-  formData.gender = index === 0 ? 1 : 0;
+  if (genderOptions.value[index]) {
+    formData.gender = Number(genderOptions.value[index].value);
+  }
 };
 
 // 部门选择变化
@@ -279,7 +290,7 @@ const onDeptChange = (e: any) => {
   const index = e.detail.value;
   deptIndex.value = index;
   if (deptOptions.value[index]) {
-    formData.deptId = deptOptions.value[index].deptId;
+    formData.deptName = deptOptions.value[index].deptName;
   }
 };
 
@@ -288,7 +299,7 @@ const onPositionChange = (e: any) => {
   const index = e.detail.value;
   positionIndex.value = index;
   if (positionOptions.value[index]) {
-    formData.positionId = positionOptions.value[index].positionId;
+    formData.positionName = positionOptions.value[index].positionName;
   }
 };
 
@@ -307,6 +318,7 @@ const onBirthDateChange = (e: any) => {
 // 入职日期选择变化
 const onHireDateChange = (e: any) => {
   formData.hireDate = e.detail.value;
+  console.log('入职日期:', formData.hireDate);
 };
 
 // 提交表单
@@ -369,10 +381,44 @@ const validateForm = () => {
   return true;
 };
 
+// 加载性别状态选项
+const loadGenderOptions = () => {
+  DictAPI.getDictItems('gender')
+    .then(response => {
+      genderOptions.value = response;
+      console.log('性别字典数据:', response); // 打印查看返回的数据
+
+      // 新增模式下默认选中第一项
+      if (!employeeId.value && response.length > 0) {
+        genderIndex.value = 0;
+        formData.gender = Number(response[0].value);
+      }
+
+    })
+    .catch(error => {
+      console.error('加载性别状态选项失败:', error);
+    });
+};
+
+
+// 监听 genderOptions 和 formData.gender
+//需要确保在字典数据返回后再设置编辑模式的索引。可以使用 Promise.all或 watch来确保顺序。
+watch([() => genderOptions.value, () => formData.gender], ([newOptions, newGender]) => {
+  if (newOptions.length > 0 && newGender !== undefined) {
+    // 根据 formData.gender 的值在 genderOptions 中查找索引
+    const index = newOptions.findIndex(item => Number(item.value) === newGender);
+    if (index !== -1) {
+      genderIndex.value = index;
+    }
+  }
+}, { immediate: true });
+
+
 // 取消
 const handleCancel = () => {
   uni.navigateBack();
 };
+
 </script>
 
 <style lang="scss" scoped>

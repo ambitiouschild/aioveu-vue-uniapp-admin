@@ -419,8 +419,21 @@ const handleSelectionChange = (selection: any) => {
   removeIds.value = selection.map((item: any) => item.id);
 };
 
+
+const needRefresh = ref(false);
+
+onShow(() => {
+  if (needRefresh.value) {
+    handleQuery();
+    needRefresh.value = false;
+  }
+});
+
 // 打开表单页面
 const handleOpenFormPage = (id?: number) => {
+
+  needRefresh.value = true; // 标记需要刷新
+
   // 存储ID
   editingOutboundId.value = id;
 

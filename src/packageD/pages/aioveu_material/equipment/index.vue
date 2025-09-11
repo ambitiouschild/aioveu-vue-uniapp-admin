@@ -377,8 +377,19 @@ const handleSelectionChange = (selection: AioveuEquipmentPageVO[]) => {
     .filter((id): id is number => id !== undefined && id !== null) as number[];
 };
 
+const needRefresh = ref(false);
+
+onShow(() => {
+  if (needRefresh.value) {
+    handleQuery();
+    needRefresh.value = false;
+  }
+});
+
 // 打开表单页
 const handleOpenFormPage = (id?: number) => {
+
+  needRefresh.value = true; // 标记需要刷新
   // 存储ID
   editingEquipmentId.value = id;
 

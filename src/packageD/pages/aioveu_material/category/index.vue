@@ -257,8 +257,20 @@ const handleSelectionChange = (selection: AioveuCategoryPageVO[]) => {
     .filter((id): id is number => id !== undefined && id !== null) as number[];
 };
 
+
+const needRefresh = ref(false);
+
+onShow(() => {
+  if (needRefresh.value) {
+    handleQuery();
+    needRefresh.value = false;
+  }
+});
+
 // 打开表单页
 const handleOpenDialog = (id?: number) => {
+  needRefresh.value = true; // 标记需要刷新
+
   let url = '/packageD/pages/aioveu_material/category/form';
 
   if (id !== undefined) {

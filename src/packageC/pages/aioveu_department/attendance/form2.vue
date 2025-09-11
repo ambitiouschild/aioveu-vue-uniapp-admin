@@ -40,23 +40,31 @@
       <!-- 上班打卡时间 -->
       <view class="form-item">
         <text class="form-label">上班打卡时间</text>
-        <view class="time-record-container">
-          <button class="record-btn" @click="recordCheckinTime">上班打卡</button>
-          <text class="time-display">
-            {{ formData.checkinTime ? formatTime(formData.checkinTime) : '未打卡' }}
-          </text>
-        </view>
+        <picker
+          class="form-picker"
+          mode="time"
+          :value="formData.checkinTime"
+          @change="onCheckinTimeChange"
+        >
+          <view class="picker-view">
+            {{ formData.checkinTime || '请选择上班时间' }}
+          </view>
+        </picker>
       </view>
 
       <!-- 下班打卡时间 -->
       <view class="form-item">
         <text class="form-label">下班打卡时间</text>
-        <view class="time-record-container">
-          <button class="record-btn" @click="recordCheckoutTime">下班打卡</button>
-          <text class="time-display">
-            {{ formData.checkoutTime ? formatTime(formData.checkoutTime) : '未打卡' }}
-          </text>
-        </view>
+        <picker
+          class="form-picker"
+          mode="time"
+          :value="formData.checkoutTime"
+          @change="onCheckoutTimeChange"
+        >
+          <view class="picker-view">
+            {{ formData.checkoutTime || '请选择下班时间' }}
+          </view>
+        </picker>
       </view>
 
       <!-- 工作时长 -->
@@ -96,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import AioveuAttendanceAPI, {
   AioveuAttendanceForm
@@ -108,14 +116,13 @@ const formTitle = ref('新增考勤');
 const attendanceId = ref<number | undefined>(undefined);
 const loading = ref(false);
 
-// 简化表单数据结构
-const formData = reactive({
+const formData = reactive<AioveuAttendanceForm>({
   employeeName: '',
-  date: '',
-  checkinTime: '',
-  checkoutTime: '',
-  workHours: undefined as number | undefined,
-  status: undefined as number | undefined
+  // date: '',
+  // checkinTime: '',
+  // checkoutTime: '',
+  workHours: undefined,
+  status: undefined
 });
 
 const employeeOptions = ref<EmployeeOptionVO[]>([]);
@@ -133,12 +140,6 @@ onLoad((options: any) => {
     loadAttendanceData();
   } else {
     formTitle.value = '新增考勤';
-    // 设置默认日期为今天
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    formData.date = `${year}-${month}-${day}`;
   }
 
   loadEmployees();
@@ -152,25 +153,7 @@ const loadAttendanceData = () => {
   loading.value = true;
   AioveuAttendanceAPI.getFormData(attendanceId.value)
     .then((data) => {
-      // 直接赋值
-      formData.employeeName = data.employeeName || '';
-      formData.date = data.date || '';
-
-      // 从完整时间中提取时间部分
-      if (data.checkinTime) {
-        // 修复：正确提取时间部分
-        const timePart = data.checkinTime.split('T')[1]?.split(':').slice(0, 2).join(':');
-        formData.checkinTime = timePart || '';
-      }
-
-      if (data.checkoutTime) {
-        // 修复：正确提取时间部分
-        const timePart = data.checkoutTime.split('T')[1]?.split(':').slice(0, 2).join(':');
-        formData.checkoutTime = timePart || '';
-      }
-
-      formData.workHours = data.workHours ? Number(data.workHours) : undefined;
-      formData.status = data.status;
+      Object.assign(formData, data);
 
       // 设置员工索引
       if (formData.employeeName) {
@@ -228,34 +211,14 @@ const onDateChange = (e: any) => {
   formData.date = e.detail.value;
 };
 
-// 记录上班时间
-const recordCheckinTime = () => {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-
-  formData.checkinTime = `${hours}:${minutes}:${seconds}`;
-
-  uni.showToast({
-    title: '上班打卡成功',
-    icon: 'success'
-  });
+// 上班时间选择变化
+const onCheckinTimeChange = (e: any) => {
+  formData.checkinTime = e.detail.value;
 };
 
-// 记录下班时间
-const recordCheckoutTime = () => {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-
-  formData.checkoutTime = `${hours}:${minutes}:${seconds}`;
-
-  uni.showToast({
-    title: '下班打卡成功',
-    icon: 'success'
-  });
+// 下班时间选择变化
+const onCheckoutTimeChange = (e: any) => {
+  formData.checkoutTime = e.detail.value;
 };
 
 // 状态选择变化
@@ -267,32 +230,15 @@ const onStatusChange = (e: any) => {
   }
 };
 
-// 格式化时间显示
-const formatTime = (time: string) => {
-  if (!time) return '';
-  return time.substring(0, 8); // 显示 HH:mm:ss
-};
-
 // 提交表单
 const handleSubmit = () => {
   if (!validateForm()) return;
 
   uni.showLoading({ title: '提交中...' });
 
-  // 准备提交给后端的数据 - 修复时间格式
-  const submitData = {
-    employeeName: formData.employeeName,
-    date: formData.date,
-    // 修复：添加T分隔符
-    checkinTime: formData.checkinTime ? `${formData.date} ${formData.checkinTime}` : undefined,
-    checkoutTime: formData.checkoutTime ? `${formData.date} ${formData.checkoutTime}` : undefined,
-    workHours: formData.workHours,
-    status: formData.status
-  };
-
   if (attendanceId.value) {
     // 更新
-    AioveuAttendanceAPI.update(attendanceId.value, submitData)
+    AioveuAttendanceAPI.update(attendanceId.value, formData)
       .then(() => {
         uni.showToast({
           title: "修改成功",
@@ -303,7 +249,7 @@ const handleSubmit = () => {
       .finally(() => uni.hideLoading());
   } else {
     // 新增
-    AioveuAttendanceAPI.add(submitData)
+    AioveuAttendanceAPI.add(formData)
       .then(() => {
         uni.showToast({
           title: "新增成功",
@@ -333,7 +279,7 @@ const validateForm = () => {
     return false;
   }
 
-  if (formData.workHours === undefined || formData.workHours === null) {
+  if (!formData.workHours) {
     uni.showToast({
       title: "请输入工作时长",
       icon: "none"
@@ -413,32 +359,6 @@ const handleCancel = () => {
 .picker-view {
   height: 44rpx;
   line-height: 44rpx;
-}
-
-.time-record-container {
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-}
-
-.record-btn {
-  background: #5e72e4;
-  color: white;
-  border-radius: 12rpx;
-  padding: 16rpx 24rpx;
-  font-size: 28rpx;
-  border: none;
-  flex-shrink: 0;
-}
-
-.time-display {
-  font-size: 30rpx;
-  color: #333;
-  padding: 16rpx;
-  background: #f8f9fa;
-  border-radius: 12rpx;
-  flex-grow: 1;
-  text-align: center;
 }
 
 .form-footer {
