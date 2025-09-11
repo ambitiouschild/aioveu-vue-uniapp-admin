@@ -33,27 +33,27 @@
         </picker>
       </view>
 
-      <!-- 单位 -->
-      <view class="form-item">
-        <text class="form-label">单位</text>
-        <input
-          type="text"
-          class="form-input"
-          placeholder="请输入单位"
-          v-model="formData.unit"
-        />
-      </view>
+<!--      &lt;!&ndash; 单位 &ndash;&gt;-->
+<!--      <view class="form-item">-->
+<!--        <text class="form-label">单位</text>-->
+<!--        <input-->
+<!--          type="text"-->
+<!--          class="form-input"-->
+<!--          placeholder="请输入单位"-->
+<!--          v-model="formData.unit"-->
+<!--        />-->
+<!--      </view>-->
 
-      <!-- 规格型号 -->
-      <view class="form-item">
-        <text class="form-label">规格型号</text>
-        <input
-          type="text"
-          class="form-input"
-          placeholder="请输入规格型号"
-          v-model="formData.spec"
-        />
-      </view>
+<!--      &lt;!&ndash; 规格型号 &ndash;&gt;-->
+<!--      <view class="form-item">-->
+<!--        <text class="form-label">规格型号</text>-->
+<!--        <input-->
+<!--          type="text"-->
+<!--          class="form-input"-->
+<!--          placeholder="请输入规格型号"-->
+<!--          v-model="formData.spec"-->
+<!--        />-->
+<!--      </view>-->
 
       <!-- 采购单价 -->
       <view class="form-item">

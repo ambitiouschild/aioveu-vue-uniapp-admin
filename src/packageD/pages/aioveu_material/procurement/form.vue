@@ -80,16 +80,17 @@
       <!-- 下单时间 -->
       <view class="form-item">
         <text class="form-label required">下单时间</text>
-        <picker
+        <wd-datetime-picker
           class="form-picker"
-          mode="date"
+          mode="datetime"
           :value="formData.orderDate"
-          @change="onOrderDateChange"
+          :default-value="new Date()"
+          @confirm="onOrderDateChange"
         >
           <view class="picker-view">
-            {{ formData.orderDate || '请选择下单时间' }}
+            {{ formData.orderDate ? formatDateTimeDisplay(formData.orderDate) :'请选择下单时间' }}
           </view>
-        </picker>
+        </wd-datetime-picker>
       </view>
 
       <!-- 预计到货日期 -->
@@ -125,16 +126,17 @@
       <!-- 签收时间 -->
       <view class="form-item">
         <text class="form-label">签收时间</text>
-        <picker
+        <wd-datetime-picker
           class="form-picker"
           mode="date"
           :value="formData.receiptDate"
-          @change="onReceiptDateChange"
+          :default-value="new Date()"
+          @confirm="onReceiptDateChange"
         >
           <view class="picker-view">
-            {{ formData.receiptDate || '请选择签收时间' }}
+            {{ formData.receiptDate  ? formatDateTimeDisplay(formData.receiptDate) : '请选择签收时间' }}
           </view>
-        </picker>
+        </wd-datetime-picker>
       </view>
 
       <!-- 入库仓库 -->
@@ -157,16 +159,17 @@
       <!-- 入库时间 -->
       <view class="form-item">
         <text class="form-label">入库时间</text>
-        <picker
+        <wd-datetime-picker
           class="form-picker"
           mode="date"
           :value="formData.inboundDate"
-          @change="onInboundDateChange"
+          :default-value="new Date()"
+          @confirm="onInboundDateChange"
         >
           <view class="picker-view">
-            {{ formData.inboundDate || '请选择入库时间' }}
+            {{ formData.inboundDate ? formatDateTimeDisplay(formData.inboundDate) :  '请选择入库时间' }}
           </view>
-        </picker>
+        </wd-datetime-picker>
       </view>
 
       <!-- 状态 -->
@@ -223,16 +226,17 @@
       <!-- 审核时间 -->
       <view class="form-item">
         <text class="form-label">审核时间</text>
-        <picker
+        <wd-datetime-picker
           class="form-picker"
           mode="date"
           :value="formData.reviewTime"
-          @change="onReviewTimeChange"
+          :default-value="new Date()"
+          @confirm="onReviewTimeChange"
         >
           <view class="picker-view">
-            {{ formData.reviewTime || '请选择审核时间' }}
+            {{ formData.reviewTime ? formatDateTimeDisplay(formData.reviewTime) : '请选择审核时间' }}
           </view>
-        </picker>
+        </wd-datetime-picker>
       </view>
 
       <!-- 备注 -->
@@ -460,7 +464,7 @@ const onReviewerChange = (e: any) => {
 
 // 日期选择变化
 const onOrderDateChange = (e: any) => {
-  formData.orderDate = e.detail.value;
+  formData.orderDate = new Date(e.value);
 };
 
 const onExpectedDeliveryChange = (e: any) => {
@@ -472,16 +476,55 @@ const onActualDeliveryChange = (e: any) => {
 };
 
 const onReceiptDateChange = (e: any) => {
-  formData.receiptDate = e.detail.value;
+  formData.receiptDate = new Date(e.value);
 };
 
 const onInboundDateChange = (e: any) => {
-  formData.inboundDate = e.detail.value;
+  formData.inboundDate = new Date(e.value);
 };
 
 const onReviewTimeChange = (e: any) => {
-  formData.reviewTime = e.detail.value;
+  formData.reviewTime = new Date(e.value);
 };
+
+
+// 时间显示格式化函数
+const formatDateTimeDisplay = (date: Date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
+
+// 发送无时区标识的本地时间字符串，将 Date 转换为后端需要的格式: yyyy-MM-dd'T'HH:mm:ss
+const formatDateToBackendString = (date: Date | undefined) => {
+  if (!date) return ''; // 处理 undefined 和 null
+
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  //const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// 计算属性：转换为后端需要的字符串格式
+const backendFormData = computed(() => {
+  return {
+    ...formData,
+    orderDate: formatDateToBackendString(formData.orderDate),
+    receiptDate: formatDateToBackendString(formData.receiptDate),
+    inboundDate: formatDateToBackendString(formData.inboundDate),
+    reviewTime: formatDateToBackendString(formData.reviewTime),
+  };
+});
 
 // 提交表单
 const handleSubmit = async () => {
@@ -491,6 +534,7 @@ const handleSubmit = async () => {
     uni.showLoading({ title: '提交中...' });
 
     const id = editingProcurementId.value;
+    const formData = backendFormData.value;
 
     if (id) {
       // 更新采购流程

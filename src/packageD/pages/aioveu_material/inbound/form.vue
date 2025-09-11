@@ -155,16 +155,17 @@
       <!-- 入库时间 -->
       <view class="form-item">
         <text class="form-label">入库时间</text>
-        <picker
+        <wd-datetime-picker
           class="form-picker"
           mode="datetime"
           :value="formData.inTime"
-          @change="onInTimeChange"
+          :default-value="new Date()"
+          @confirm="onInTimeChange"
         >
           <view class="picker-view">
-            {{ formData.inTime || '请选择入库时间' }}
+            {{ formData.inTime ? formatDateTimeDisplay(formData.inTime) : '请选择入库时间' }}
           </view>
-        </picker>
+        </wd-datetime-picker>
       </view>
 
       <!-- 操作员 -->
@@ -242,6 +243,8 @@ const materialIndex = ref(-1);
 const warehouseIndex = ref(-1);
 const employeeIndex = ref(-1);
 const inboundTypeIndex = ref(-1);
+
+
 
 onLoad((options: any) => {
   console.log('页面参数:', options);
@@ -429,13 +432,73 @@ const onProductionDateChange = (e: any) => {
 
 // 有效期至选择变化
 const onExpiryDateChange = (e: any) => {
+  console.log(e.detail.value);
   formData.expiryDate = e.detail.value;
+};
+
+// 时间显示格式化函数
+const formatDateTimeDisplay = (date: Date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
 // 入库时间选择变化
 const onInTimeChange = (e: any) => {
-  formData.inTime = e.detail.value;
+  // 时间选择器返回的是对象 {value: 1420041600000},时间选择器不同，返回值不同
+  //Wot Design Uni 的 datetime-picker 组件在 @confirm事件中返回的是一个对象，包含 value属性。但错误提示 e是 undefined，这意味着事件对象可能没有被正确传递。
+  console.log(e.value);
+  console.log('最后出库时间选择事件对象:', e.value);
+  formData.inTime = new Date(e.value);
 };
+
+// 修改 formatDateToBackendString 函数，允许 undefined
+// 发送无时区标识的本地时间字符串，将 Date 转换为后端需要的格式: yyyy-MM-dd'T'HH:mm:ss.SSS
+const formatDateToBackendString = (date: Date | undefined) => {
+
+  if (!date) return ''; // 处理 undefined 和 null
+
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  //const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// 计算属性：转换为后端需要的字符串格式
+const backendFormData = computed(() => {
+
+
+  // 1. 获取转换后的时间值
+  const inTimeValue = formatDateToBackendString(formData.inTime);
+
+  // 2. 打印原始值和转换后的值
+  console.log('原始 inTime (Date):', formData.inTime);
+  console.log('转换后的 inTime (string):', inTimeValue);
+
+  // 3. 创建结果对象
+  const result = {
+    ...formData,
+    inTime: inTimeValue,
+  };
+
+  // 4. 打印整个结果对象
+  console.log('backendFormData 对象:', JSON.stringify(result, null, 2));
+
+  return result;
+});
+
+
+
+
 
 // 提交表单
 const handleSubmit = async () => {
@@ -446,6 +509,7 @@ const handleSubmit = async () => {
 
     // 使用存储的ID
     const id = editingInboundId.value;
+    const formData  = backendFormData.value;
 
     if (id) {
       // 更新入库
