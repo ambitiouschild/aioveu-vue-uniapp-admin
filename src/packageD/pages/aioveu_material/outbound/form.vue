@@ -217,19 +217,23 @@ const operatorIndex = ref(-1);
 const recipientIndex = ref(-1);
 const statusIndex = ref(-1);
 
-onLoad((options: any) => {
+onLoad(async (options: any) => {
+  // 加载选项数据
+  await loadStatusOptions();
+  await loadMaterialOptions();
+  await loadWarehouseOptions();
+  await loadDeptOptions();
+  await loadEmployeeOptions();
+
   if (options && options.id) {
     editingOutboundId.value = Number(options.id);
     formTitle.value = '编辑出库记录';
-    loadFormData(Number(options.id));
+    await loadFormData(Number(options.id));
+  }else {
+    formTitle.value = '新增出库记录';
   }
 
-  // 加载选项数据
-  loadStatusOptions();
-  loadMaterialOptions();
-  loadWarehouseOptions();
-  loadDeptOptions();
-  loadEmployeeOptions();
+
 });
 
 // 加载表单数据

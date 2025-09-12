@@ -84,19 +84,21 @@ const formData = reactive<AioveuCategoryForm>({
 const parentCategoryOptions = ref<CategoryOptionVO[]>([]);
 const parentCategoryIndex = ref(-1);
 
-onLoad((options: any) => {
+onLoad(async (options: any) => {
   console.log('页面参数:', options);
+
+  // 加载父分类选项
+  await loadParentCategoryOptions();
 
   if (options.id) {
     categoryId.value = Number(options.id);
     formTitle.value = '编辑分类';
-    loadCategoryData();
+    await loadCategoryData();
   } else {
     formTitle.value = '新增分类';
   }
 
-  // 加载父分类选项
-  loadParentCategoryOptions();
+
 });
 
 // 加载分类数据

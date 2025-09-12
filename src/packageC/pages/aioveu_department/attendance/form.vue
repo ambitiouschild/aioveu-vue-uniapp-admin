@@ -124,13 +124,17 @@ const attendanceStatusOptions = ref<DictItemOption[]>([]);
 const employeeIndex = ref(-1);
 const statusIndex = ref(-1);
 
-onLoad((options: any) => {
+onLoad(async  (options: any) => {
   console.log('页面参数:', options);
+
+
+  await loadEmployees();
+  await loadAttendanceStatus();
 
   if (options.attendanceId) {
     attendanceId.value = Number(options.attendanceId);
     formTitle.value = '编辑考勤';
-    loadAttendanceData();
+    await loadAttendanceData();
   } else {
     formTitle.value = '新增考勤';
     // 设置默认日期为今天
@@ -141,8 +145,7 @@ onLoad((options: any) => {
     formData.date = `${year}-${month}-${day}`;
   }
 
-  loadEmployees();
-  loadAttendanceStatus();
+
 });
 
 // 加载考勤数据

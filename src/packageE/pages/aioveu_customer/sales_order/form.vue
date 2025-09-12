@@ -354,25 +354,30 @@ const formatDateTimeDisplay = (date: Date | undefined) => {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
-onLoad((options: any) => {
+onLoad(async (options: any) => {
   console.log('页面参数:', options);
-
-  if (options.id) {
-    salesOrderId.value = Number(options.id);
-    formTitle.value = '编辑销售订单';
-    loadSalesOrderData();
-  } else {
-    formTitle.value = '新增销售订单';
-  }
 
   // 存储编辑ID
   editingSalesOrderId.value = salesOrderId.value;
 
   // 加载选项数据
-  loadCustomerOptions();
-  loadContactOptions();
-  loadEmployeeOptions();
-  loadDictOptions();
+  await loadCustomerOptions();
+  await loadContactOptions();
+  await loadEmployeeOptions();
+  await loadDictOptions();
+
+
+
+  if (options.id) {
+    salesOrderId.value = Number(options.id);
+    formTitle.value = '编辑销售订单';
+    await loadSalesOrderData();
+
+  } else {
+    formTitle.value = '新增销售订单';
+  }
+
+
 });
 
 // 加载销售订单数据

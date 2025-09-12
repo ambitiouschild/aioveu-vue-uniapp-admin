@@ -315,13 +315,21 @@ const paymentStatusIndex = ref(-1);
 const transactionTypeIndex = ref(-1);
 const transactionStatusIndex = ref(-1);
 
-onLoad((options: any) => {
+onLoad(async (options: any) => {
   console.log('页面参数:', options);
+
+  // 加载选项数据
+  await loadCustomerOptions();
+  await loadContactOptions();
+  await loadEmployeeOptions();
+  await loadDictOptions();
+
+
 
   if (options.id) {
     transactionId.value = Number(options.id);
     formTitle.value = '编辑交易记录';
-    loadTransactionData();
+    await loadTransactionData();
   } else {
     formTitle.value = '新增交易记录';
   }
@@ -329,11 +337,7 @@ onLoad((options: any) => {
   // 存储编辑ID
   editingTransactionId.value = transactionId.value;
 
-  // 加载选项数据
-  loadCustomerOptions();
-  loadContactOptions();
-  loadEmployeeOptions();
-  loadDictOptions();
+
 });
 
 // 时间显示格式化函数

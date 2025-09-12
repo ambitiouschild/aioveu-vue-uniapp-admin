@@ -305,18 +305,25 @@ const statusIndex = ref(-1);
 const applicantIndex = ref(-1);
 const reviewerIndex = ref(-1);
 
-onLoad((options: any) => {
+onLoad(async (options: any) => {
+
+
+  // 加载选项数据
+  await loadStatusOptions();
+  await loadMaterialOptions();
+  await loadWarehouseOptions();
+  await loadEmployeeOptions();
+
+
   if (options && options.id) {
     editingProcurementId.value = Number(options.id);
     formTitle.value = '编辑采购流程';
-    loadFormData(Number(options.id));
+    await loadFormData(Number(options.id));
+  }else {
+    formTitle.value = '新增采购流程';
   }
 
-  // 加载选项数据
-  loadStatusOptions();
-  loadMaterialOptions();
-  loadWarehouseOptions();
-  loadEmployeeOptions();
+
 });
 
 // 加载表单数据

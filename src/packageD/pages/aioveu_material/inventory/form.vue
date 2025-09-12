@@ -150,8 +150,8 @@ const formData = reactive<AioveuInventoryForm>({
   materialName: '',
   quantity: undefined,
   batchNumber: '',
-  productionDate: '',
-  expiryDate: '',
+  // productionDate: '',
+  // expiryDate: '',
   // lastInbound: currentDateTime.value, // 默认使用当前时间
   // lastOutbound: currentDateTime.value  // 默认使用当前时间
 });
@@ -165,7 +165,10 @@ const materialIndex = ref(-1);
 
 // 修改 formatDateToBackendString 函数，允许 undefined
 // 发送无时区标识的本地时间字符串，将 Date 转换为后端需要的格式: yyyy-MM-dd'T'HH:mm:ss.SSS
-const formatDateToBackendString = (date: Date) => {
+const formatDateToBackendString = (date: Date | undefined) => {
+
+  if (!date) return ''; // 处理 undefined 和 null
+
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
@@ -199,14 +202,17 @@ const formatDateTimeDisplay  = (date: Date) => {
 // 在新增模式下，由于初始值可能没有设置，所以显示当前时间。
 
 
-onLoad((options: any) => {
+onLoad(async (options: any) => {
   console.log('页面参数:', options);
 
+  // 加载选项数据
+  await loadWarehouseOptions();
+  await loadMaterialOptions();
 
   if (options.id) {
     inventoryId.value = Number(options.id);
     formTitle.value = '编辑库存';
-    loadInventoryData();
+    await loadInventoryData();
   } else {
     formTitle.value = '新增库存';
     // 设置默认时间为当前时间
@@ -214,9 +220,7 @@ onLoad((options: any) => {
     formData.lastOutbound = new Date();
   }
 
-  // 加载选项数据
-  loadWarehouseOptions();
-  loadMaterialOptions();
+
 });
 
 // 加载库存数据

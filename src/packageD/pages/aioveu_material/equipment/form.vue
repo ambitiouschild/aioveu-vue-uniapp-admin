@@ -259,18 +259,23 @@ const deptIndex = ref(-1);
 const employeeIndex = ref(-1);
 const statusIndex = ref(-1);
 
-onLoad((options: any) => {
+onLoad(async (options: any) => {
+
+  // 加载选项数据
+  await loadCategoryOptions();
+  await loadDeptOptions();
+  await loadEmployeeOptions();
+  await loadStatusOptions();
+
+
   if (options && options.id) {
     editingEquipmentId.value = Number(options.id);
     formTitle.value = '编辑设备';
-    loadFormData(Number(options.id));
+    await loadFormData(Number(options.id));
+  }else {
+    formTitle.value = '新增设备';
   }
 
-  // 加载选项数据
-  loadCategoryOptions();
-  loadDeptOptions();
-  loadEmployeeOptions();
-  loadStatusOptions();
 });
 
 // 加载表单数据

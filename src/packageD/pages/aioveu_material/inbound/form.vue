@@ -246,13 +246,19 @@ const inboundTypeIndex = ref(-1);
 
 
 
-onLoad((options: any) => {
+onLoad(async (options: any) => {
   console.log('页面参数:', options);
+
+  // 加载选项数据
+  await loadMaterialOptions();
+  await loadWarehouseOptions();
+  await loadEmployeeOptions();
+  await loadInboundTypeOptions();
 
   if (options.id) {
     inboundId.value = Number(options.id);
     formTitle.value = '编辑入库';
-    loadInboundData();
+    await loadInboundData();
   } else {
     formTitle.value = '新增入库';
   }
@@ -260,11 +266,7 @@ onLoad((options: any) => {
   // 存储编辑ID
   editingInboundId.value = inboundId.value;
 
-  // 加载选项数据
-  loadMaterialOptions();
-  loadWarehouseOptions();
-  loadEmployeeOptions();
-  loadInboundTypeOptions();
+
 });
 
 // 加载入库数据

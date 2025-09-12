@@ -189,8 +189,13 @@ const statusOptions = ['离职', '在职', '休假', '实习'];
 const statusIndex = ref(-1);
 const genderOptions = ref<DictItemOption[]>([]);
 // 在表单页中修改onLoad函数
-onLoad((options: any) => {
+onLoad(async (options: any) => {
   console.log('页面参数:', options);
+
+  // 加载其他数据
+  await loadDepartments();
+  await loadPositions();
+  await loadGenderOptions();
 
   // 检查是否有employeeId参数
   if (options?.employeeId) {
@@ -206,7 +211,7 @@ onLoad((options: any) => {
       const id = Number(decodedId);
       employeeId.value = id;
       formTitle.value = '编辑员工';
-      loadEmployeeData();
+      await loadEmployeeData();
     } catch (error) {
       console.error('参数解析错误:', error);
       uni.showToast({
@@ -218,10 +223,7 @@ onLoad((options: any) => {
     formTitle.value = '新增员工';
   }
 
-  // 加载其他数据
-  loadDepartments();
-  loadPositions();
-  loadGenderOptions();
+
 });
 
 // 加载员工数据

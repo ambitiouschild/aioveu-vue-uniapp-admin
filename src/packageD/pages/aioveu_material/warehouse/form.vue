@@ -157,13 +157,18 @@ const isActiveOptions = ref<DictItemOption[]>([]);
 const employeeIndex = ref(-1);
 const statusIndex = ref(-1);
 
-onLoad((options: any) => {
+onLoad(async (options: any) => {
   console.log('页面参数:', options);
+
+  // 加载选项数据
+  await loadEmployeeOptions();
+  await loadIsActiveOptions();
+
 
   if (options.id) {
     warehouseId.value = Number(options.id);
     formTitle.value = '编辑仓库';
-    loadWarehouseData();
+    await loadWarehouseData();
   } else {
     formTitle.value = '新增仓库';
   }
@@ -171,9 +176,7 @@ onLoad((options: any) => {
   // 存储编辑ID
   editingWarehouseId.value = warehouseId.value;
 
-  // 加载选项数据
-  loadEmployeeOptions();
-  loadIsActiveOptions();
+
 });
 
 // 加载仓库数据
