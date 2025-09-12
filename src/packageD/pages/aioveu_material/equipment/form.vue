@@ -259,19 +259,19 @@ const deptIndex = ref(-1);
 const employeeIndex = ref(-1);
 const statusIndex = ref(-1);
 
-onLoad(async (options: any) => {
+onLoad((options: any) => {
 
   // 加载选项数据
-  await loadCategoryOptions();
-  await loadDeptOptions();
-  await loadEmployeeOptions();
-  await loadStatusOptions();
+  loadCategoryOptions();
+  loadDeptOptions();
+  loadEmployeeOptions();
+  loadStatusOptions();
 
 
   if (options && options.id) {
     editingEquipmentId.value = Number(options.id);
     formTitle.value = '编辑设备';
-    await loadFormData(Number(options.id));
+    loadFormData(Number(options.id));
   }else {
     formTitle.value = '新增设备';
   }

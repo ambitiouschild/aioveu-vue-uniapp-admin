@@ -246,19 +246,19 @@ const inboundTypeIndex = ref(-1);
 
 
 
-onLoad(async (options: any) => {
+onLoad( (options: any) => {
   console.log('页面参数:', options);
 
   // 加载选项数据
-  await loadMaterialOptions();
-  await loadWarehouseOptions();
-  await loadEmployeeOptions();
-  await loadInboundTypeOptions();
+  loadMaterialOptions();
+  loadWarehouseOptions();
+  loadEmployeeOptions();
+  loadInboundTypeOptions();
 
   if (options.id) {
     inboundId.value = Number(options.id);
     formTitle.value = '编辑入库';
-    await loadInboundData();
+    loadInboundData();
   } else {
     formTitle.value = '新增入库';
   }

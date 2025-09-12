@@ -92,18 +92,18 @@ const positionLevelOptions = ref<DictItemOption[]>([]);
 const deptIndex = ref(-1);
 const levelIndex = ref(-1);
 
-onLoad(async (options: any) => {
+onLoad((options: any) => {
   console.log('页面参数:', options);
 
   // 加载选项数据
-  await loadDeptOptions();
-  await loadDictOptions();
+  loadDeptOptions();
+  loadDictOptions();
 
 
   if (options.id) {
     positionId.value = Number(options.id);
     formTitle.value = '编辑岗位';
-    await loadPositionData();
+    loadPositionData();
   } else {
     formTitle.value = '新增岗位';
   }

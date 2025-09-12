@@ -203,17 +203,17 @@ const customerIndex = ref(-1);
 const isPrimaryIndex = ref(-1);
 const genderIndex = ref(-1);
 
-onLoad(async (options: any) => {
+onLoad((options: any) => {
   console.log('页面参数:', options);
 
   // 加载选项数据
-  await loadCustomerOptions();
-  await loadDictOptions();
+  loadCustomerOptions();
+  loadDictOptions();
 
   if (options.id) {
     contactId.value = Number(options.id);
     formTitle.value = '编辑联系人';
-    await loadContactData();
+    loadContactData();
   } else {
     formTitle.value = '新增联系人';
   }

@@ -354,24 +354,24 @@ const formatDateTimeDisplay = (date: Date | undefined) => {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
-onLoad(async (options: any) => {
+onLoad((options: any) => {
   console.log('页面参数:', options);
 
   // 存储编辑ID
   editingSalesOrderId.value = salesOrderId.value;
 
   // 加载选项数据
-  await loadCustomerOptions();
-  await loadContactOptions();
-  await loadEmployeeOptions();
-  await loadDictOptions();
+  loadCustomerOptions();
+  loadContactOptions();
+  loadEmployeeOptions();
+  loadDictOptions();
 
 
 
   if (options.id) {
     salesOrderId.value = Number(options.id);
     formTitle.value = '编辑销售订单';
-    await loadSalesOrderData();
+    loadSalesOrderData();
 
   } else {
     formTitle.value = '新增销售订单';

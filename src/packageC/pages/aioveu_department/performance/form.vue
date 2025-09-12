@@ -149,19 +149,19 @@ const quarterIndex = ref(-1);
 const gradeIndex = ref(-1);
 
 // 页面加载钩子
-onLoad(async (options: any) => {
+onLoad( (options: any) => {
   console.log('表单页参数:', options);
 
   // 加载选项数据
-  await loadEmployees();
-  await loadPeriodQuarterOptions();
-  await loadPerformanceGradeOptions();
+  loadEmployees();
+  loadPeriodQuarterOptions();
+  loadPerformanceGradeOptions();
 
 
   if (options.id) {
     performanceId.value = Number(options.id);
     formTitle.value = '编辑绩效';
-    await loadPerformanceData();
+    loadPerformanceData();
   } else {
     formTitle.value = '新增绩效';
   }

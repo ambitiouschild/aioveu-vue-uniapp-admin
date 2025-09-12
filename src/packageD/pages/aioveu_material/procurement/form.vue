@@ -305,20 +305,20 @@ const statusIndex = ref(-1);
 const applicantIndex = ref(-1);
 const reviewerIndex = ref(-1);
 
-onLoad(async (options: any) => {
+onLoad((options: any) => {
 
 
   // 加载选项数据
-  await loadStatusOptions();
-  await loadMaterialOptions();
-  await loadWarehouseOptions();
-  await loadEmployeeOptions();
+  loadStatusOptions();
+  loadMaterialOptions();
+  loadWarehouseOptions();
+  loadEmployeeOptions();
 
 
   if (options && options.id) {
     editingProcurementId.value = Number(options.id);
     formTitle.value = '编辑采购流程';
-    await loadFormData(Number(options.id));
+    loadFormData(Number(options.id));
   }else {
     formTitle.value = '新增采购流程';
   }

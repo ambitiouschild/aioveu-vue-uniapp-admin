@@ -209,17 +209,17 @@ const paymentStatusOptions = ref<DictItemOption[]>([]);
 const employeeIndex = ref(-1);
 const statusIndex = ref(-1);
 
-onLoad(async (options: any) => {
+onLoad((options: any) => {
   console.log('页面参数:', options);
 
   // 加载选项数据
-  await loadEmployees();
-  await loadPaymentStatusOptions();
+  loadEmployees();
+  loadPaymentStatusOptions();
 
   if (options.id) {
     salaryId.value = Number(options.id);
     formTitle.value = '编辑工资';
-    await loadSalaryData();
+    loadSalaryData();
   } else {
     formTitle.value = '新增工资';
   }

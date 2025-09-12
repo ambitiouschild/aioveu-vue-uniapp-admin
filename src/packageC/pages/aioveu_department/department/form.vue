@@ -64,16 +64,16 @@ const formData = reactive<AioveuDepartmentForm>({
 const parentDeptOptions = ref<DeptOptionVO[]>([]);
 const parentDeptIndex = ref(-1);
 
-onLoad(async (options: any) => {
+onLoad((options: any) => {
   console.log('页面参数:', options);
 
   // 加载选项数据
-  await loadParentDeptOptions();
+  loadParentDeptOptions();
 
   if (options.id) {
     deptId.value = Number(options.id);
     formTitle.value = '编辑部门';
-    await loadDepartmentData();
+    loadDepartmentData();
   } else {
     formTitle.value = '新增部门';
   }

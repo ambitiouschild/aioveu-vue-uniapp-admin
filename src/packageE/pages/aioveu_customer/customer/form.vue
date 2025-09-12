@@ -308,17 +308,17 @@ const statusIndex = ref(-1);
 const sourceIndex = ref(-1);
 const employeeIndex = ref(-1);
 
-onLoad(async (options: any) => {
+onLoad((options: any) => {
   console.log('页面参数:', options);
 
   // 加载选项数据
-  await loadDictOptions();
-  await loadEmployeeOptions();
+  loadDictOptions();
+  loadEmployeeOptions();
 
   if (options.id) {
     customerId.value = Number(options.id);
     formTitle.value = '编辑客户';
-    await loadCustomerData();
+    loadCustomerData();
   } else {
     formTitle.value = '新增客户';
   }

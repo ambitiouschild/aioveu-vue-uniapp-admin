@@ -202,17 +202,17 @@ const formatDateTimeDisplay  = (date: Date) => {
 // 在新增模式下，由于初始值可能没有设置，所以显示当前时间。
 
 
-onLoad(async (options: any) => {
+onLoad( (options: any) => {
   console.log('页面参数:', options);
 
   // 加载选项数据
-  await loadWarehouseOptions();
-  await loadMaterialOptions();
+  loadWarehouseOptions();
+  loadMaterialOptions();
 
   if (options.id) {
     inventoryId.value = Number(options.id);
     formTitle.value = '编辑库存';
-    await loadInventoryData();
+    loadInventoryData();
   } else {
     formTitle.value = '新增库存';
     // 设置默认时间为当前时间

@@ -167,17 +167,17 @@ const isActiveOptions = ref<DictItemOption[]>([]);
 const categoryIndex = ref(-1);
 const statusIndex = ref(-1);
 
-onLoad(async (options: any) => {
+onLoad((options: any) => {
   console.log('页面参数:', options);
 
   // 加载选项数据
-  await loadCategoryOptions();
-  await loadIsActiveOptions();
+  loadCategoryOptions();
+  loadIsActiveOptions();
 
   if (options.id) {
     materialId.value = Number(options.id);
     formTitle.value = '编辑物资';
-    await loadMaterialData();
+    loadMaterialData();
   } else {
     formTitle.value = '新增物资';
   }

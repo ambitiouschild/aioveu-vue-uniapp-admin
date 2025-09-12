@@ -235,20 +235,20 @@ const materialIndex = ref(-1);
 const warehouseIndex = ref(-1);
 const statusIndex = ref(-1);
 
-onLoad(async (options: any) => {
+onLoad((options: any) => {
   console.log('页面参数:', options);
 
   // 加载选项数据
-  await loadSalesOrderOptions();
-  await loadMaterialOptions();
-  await loadWarehouseOptions();
-  await loadDictOptions();
+  loadSalesOrderOptions();
+  loadMaterialOptions();
+  loadWarehouseOptions();
+  loadDictOptions();
 
 
   if (options.id) {
     detailId.value = Number(options.id);
     formTitle.value = '编辑订单明细';
-    await loadDetailData(); // 注意：这里改为异步，确保在选项加载后再加载明细
+    loadDetailData(); // 注意：这里改为异步，确保在选项加载后再加载明细
   } else {
     formTitle.value = '新增订单明细';
   }

@@ -134,7 +134,6 @@ import DictAPI, { DictItemOption } from '@/api/system/dict';
 
 const formTitle = ref('新增仓库');
 const warehouseId = ref<number | undefined>(undefined);
-const loading = ref(false);
 
 // 在组件中添加一个变量存储当前编辑的ID
 const editingWarehouseId = ref<number | undefined>(undefined);
@@ -157,18 +156,26 @@ const isActiveOptions = ref<DictItemOption[]>([]);
 const employeeIndex = ref(-1);
 const statusIndex = ref(-1);
 
-onLoad(async (options: any) => {
+const loading = ref(true); // 添加加载状态变量
+
+//在onLoad中加载数据可以更早开始，可能减少用户等待时间。
+//表单是直接展示的，所以不能隐藏表单内容。那么我们可以使用一个遮罩层覆盖在表单上方，显示加载状态，直到所有数据加载完成再移除遮罩层。这样用户就不会看到表单数据的变化过程。
+onLoad((options: any) => {
   console.log('页面参数:', options);
 
-  // 加载选项数据
-  await loadEmployeeOptions();
-  await loadIsActiveOptions();
+  // 隐藏表单内容，显示加载状态
+  loading.value = true;
 
+
+  // 并行加载所有必需数
+     loadEmployeeOptions();
+     loadIsActiveOptions();
 
   if (options.id) {
+    // 加载选项数据
     warehouseId.value = Number(options.id);
     formTitle.value = '编辑仓库';
-    await loadWarehouseData();
+    loadWarehouseData();
   } else {
     formTitle.value = '新增仓库';
   }
@@ -176,7 +183,8 @@ onLoad(async (options: any) => {
   // 存储编辑ID
   editingWarehouseId.value = warehouseId.value;
 
-
+  // 隐藏加载状态，显示表单
+  loading.value = false;
 });
 
 // 加载仓库数据

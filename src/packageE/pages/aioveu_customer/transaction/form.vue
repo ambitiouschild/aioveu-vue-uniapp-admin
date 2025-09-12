@@ -315,21 +315,21 @@ const paymentStatusIndex = ref(-1);
 const transactionTypeIndex = ref(-1);
 const transactionStatusIndex = ref(-1);
 
-onLoad(async (options: any) => {
+onLoad((options: any) => {
   console.log('页面参数:', options);
 
   // 加载选项数据
-  await loadCustomerOptions();
-  await loadContactOptions();
-  await loadEmployeeOptions();
-  await loadDictOptions();
+  loadCustomerOptions();
+  loadContactOptions();
+  loadEmployeeOptions();
+  loadDictOptions();
 
 
 
   if (options.id) {
     transactionId.value = Number(options.id);
     formTitle.value = '编辑交易记录';
-    await loadTransactionData();
+    loadTransactionData();
   } else {
     formTitle.value = '新增交易记录';
   }
