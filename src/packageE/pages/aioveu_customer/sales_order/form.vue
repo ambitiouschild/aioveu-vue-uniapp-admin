@@ -53,16 +53,17 @@
       <!-- 下单时间 -->
       <view class="form-item">
         <text class="form-label">下单时间</text>
-        <picker
+        <wd-datetime-picker
           class="form-picker"
           mode="date"
           :value="formData.orderDate"
-          @change="onOrderDateChange"
+          :default-value="new Date()"
+          @confirm="onOrderDateChange"
         >
           <view class="picker-view">
-            {{ formData.orderDate || '请选择下单时间' }}
+            {{ formData.orderDate ? formatDateTimeDisplay(formData.orderDate) :'请选择下单时间' }}
           </view>
-        </picker>
+        </wd-datetime-picker>
       </view>
 
       <!-- 预计交货日期 -->
@@ -340,6 +341,19 @@ const paymentStatusIndex = ref(-1);
 const orderStatusIndex = ref(-1);
 const shippingMethodIndex = ref(-1);
 
+
+// 时间显示格式化函数
+const formatDateTimeDisplay = (date: Date | undefined) => {
+  if (!date) return ''; // 处理 undefined 和 null
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
 onLoad((options: any) => {
   console.log('页面参数:', options);
 
@@ -368,7 +382,11 @@ const loadSalesOrderData = async () => {
   try {
     loading.value = true;
     const data = await AioveuSalesOrderAPI.getFormData(salesOrderId.value);
-    Object.assign(formData, data);
+    Object.assign(formData,{
+      ...data,
+      // 将后端字符串转换为 Date 对象
+      orderDate: data.orderDate ? new Date(data.orderDate) : new Date(),
+    });
 
     // 设置选项索引
     if (formData.customerName) {
@@ -521,7 +539,7 @@ const onContactChange = (e: any) => {
 
 // 下单时间选择变化
 const onOrderDateChange = (e: any) => {
-  formData.orderDate = e.detail.value;
+  formData.orderDate = new Date(e.value);
 };
 
 // 预计交货日期选择变化
@@ -588,12 +606,37 @@ const onOperatorChange = (e: any) => {
   }
 };
 
+// 发送无时区标识的本地时间字符串，将 Date 转换为后端需要的格式: yyyy-MM-dd'T'HH:mm:ss
+const formatDateToBackendString = (date: Date | undefined) => {
+  if (!date) return ''; // 处理 undefined 和 null
+
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  //const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// 计算属性：转换为后端需要的字符串格式
+const backendFormData = computed(() => {
+  return {
+    ...formData,
+    orderDate: formatDateToBackendString(formData.orderDate),
+  };
+});
+
+
 // 提交表单
 const handleSubmit = async () => {
   if (!validateForm()) return;
 
   try {
     uni.showLoading({ title: '提交中...' });
+    const formData = backendFormData.value;
 
     // 使用存储的ID
     const id = editingSalesOrderId.value;

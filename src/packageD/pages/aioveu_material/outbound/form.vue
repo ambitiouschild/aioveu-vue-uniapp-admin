@@ -75,16 +75,17 @@
       <!-- 出库时间 -->
       <view class="form-item">
         <text class="form-label required">出库时间</text>
-        <picker
+        <wd-datetime-picker
           class="form-picker"
           mode="date"
           :value="formData.outTime"
-          @change="onOutTimeChange"
+          :default-value="new Date()"
+          @confirm="onOutTimeChange"
         >
           <view class="picker-view">
-            {{ formData.outTime || '请选择出库时间' }}
+            {{ formData.outTime ? formatDateTimeDisplay(formData.outTime) : '请选择出库时间' }}
           </view>
-        </picker>
+        </wd-datetime-picker>
       </view>
 
       <!-- 操作员 -->
@@ -199,18 +200,6 @@ const editingOutboundId = ref<number | undefined>(undefined);
 
 // 表单数据
 const formData = reactive<AioveuOutboundForm>({
-  outboundNo: '',
-  materialName: '',
-  warehouseName: '',
-  quantity: 0,
-  batchNumber: '',
-  // outTime: '',
-  operatorName: '',
-  recipientName: '',
-  departmentName: '',
-  purpose: '',
-  // projectId: '',
-  status: undefined
 });
 
 // 选项
@@ -247,7 +236,13 @@ onLoad((options: any) => {
 const loadFormData = async (id: number) => {
   try {
     const data = await AioveuOutboundAPI.getFormData(id);
-    Object.assign(formData, data);
+    Object.assign(formData, {
+
+      ...data,
+      // 将后端字符串转换为 Date 对象
+      outTime: data.outTime ? new Date(data.outTime) : new Date(),
+
+    });
     setSelectedIndexes();
   } catch (error) {
     console.error('加载出库数据失败:', error);
@@ -356,6 +351,19 @@ const loadEmployeeOptions = () => {
   });
 };
 
+
+// 时间显示格式化函数
+const formatDateTimeDisplay = (date: Date | undefined) => {
+  if (!date) return ''; // 处理 undefined 和 null
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
 // 物资选择变化
 const onMaterialChange = (e: any) => {
   const index = e.detail.value;
@@ -412,8 +420,30 @@ const onStatusChange = (e: any) => {
 
 // 出库时间选择变化
 const onOutTimeChange = (e: any) => {
-  formData.outTime = e.detail.value;
+  formData.outTime = new Date(e.value);
 };
+
+const formatDateToBackendString = (date: Date | undefined) => {
+  if (!date) return ''; // 处理 undefined 和 null
+
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  //const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// 计算属性：转换为后端需要的字符串格式
+const backendFormData = computed(() => {
+  return {
+    ...formData,
+    outTime: formatDateToBackendString(formData.outTime),
+  };
+});
 
 // 提交表单
 const handleSubmit = async () => {
@@ -423,6 +453,7 @@ const handleSubmit = async () => {
     uni.showLoading({ title: '提交中...' });
 
     const id = editingOutboundId.value;
+    const formData = backendFormData.value;
 
     if (id) {
       // 更新出库记录

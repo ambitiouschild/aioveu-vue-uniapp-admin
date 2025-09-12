@@ -398,6 +398,8 @@ const onSalesOrderChange = (e: any) => {
   salesOrderIndex.value = index;
   if (salesOrderOptions.value[index]) {
     formData.orderName = salesOrderOptions.value[index].salesOrderNo;
+    formData.orderId = salesOrderOptions.value[index].salesOrderId;
+    //两个字段都要赋值判断
   }
 };
 
